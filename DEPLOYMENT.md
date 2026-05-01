@@ -354,6 +354,54 @@ docker compose build --progress=plain
 Your A records aren't pointing at the server yet. Wait for propagation
 (`dig +short qubixsolution.com`), then re-run.
 
+### `enable-ssl.sh` fails with `invalid response … 500` and `Server: hcdn`
+
+That response is **not from this Nginx container**. The header `Server:
+hcdn` means **Hetzner’s CDN / proxy** in front of your VPS is answering HTTP
+before traffic reaches Docker. Let’s Encrypt asks for
+`http://yourdomain/.well-known/acme-challenge/...`; the edge must either
+serve the file from disk or **forward the request to your server on port
+80**. If the CDN can’t reach origin or has no rule for that path, you get
+**500**.
+
+**Fix (pick one):**
+
+1. **Bypass CDN for issuance (simplest)**  
+   In your DNS / Hetzner DNS / domain panel, point `qubixsolution.com` and
+   `www` with an **A record directly to your VPS public IPv4** (orange
+   cloud **off** / **DNS only** if you use Cloudflare). Wait a few minutes,
+   then:
+
+   ```bash
+   bash scripts/enable-ssl.sh
+   ```
+
+   After the certificate is issued, you can turn the CDN back on if your
+   setup allows **origin pull to port 443** and still lets HTTP **:80** hit
+   origin for renewals (many teams leave `/.well-known/` going to origin).
+
+2. **Keep CDN but fix origin routing**  
+   In the Hetzner / CDN panel: ensure **HTTP (port 80)** is enabled to your
+   VPS, health checks pass, and there is no blanket “HTTPS only” rule that
+   breaks HTTP challenges. Purge cache after fixing Nginx.
+
+**Confirm origin works (on the VPS):**
+
+```bash
+echo test > certbot/www/.well-known/acme-challenge/manual-test
+curl -i http://127.0.0.1/.well-known/acme-challenge/manual-test -H "Host: qubixsolution.com"
+# Expect: 200 and body "test"
+```
+
+If localhost is **200** but `curl -i http://qubixsolution.com/...` shows
+**500** and `hcdn`, the problem is **only** the CDN layer.
+
+### `nginx: [emerg] host not found in upstream "web:3000"`
+
+The repo’s `nginx/conf.d/qubix.conf` uses **`qubix-web:3000`** (the
+`container_name` of the `web` service) so Docker DNS resolves reliably. If
+you still see this, run `git pull` then `docker compose up -d nginx`.
+
 ### `enable-ssl.sh` fails with `Connection refused` on port 80
 
 Either:
