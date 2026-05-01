@@ -279,4 +279,3 @@ Have questions or want to extend the site? Email
 ---
 
 © Qubix Solutions. All rights reserved.
-# qubix_solution_portfolio_website
