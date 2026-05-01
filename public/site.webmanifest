@@ -1,0 +1,17 @@
+{
+  "name": "Qubix Solutions",
+  "short_name": "Qubix",
+  "description": "AI, Web, Mobile & E-commerce Engineering Studio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05060f",
+  "theme_color": "#05060f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+# ---------------------------------------------------------------------------
+# Use this config FIRST (before Let's Encrypt has issued certificates).
+#
+# 1. Rename this file to `qubix.conf` (replacing the existing one), or
+#    temporarily move qubix.conf out of nginx/conf.d/.
+# 2. Run `docker compose up -d nginx web`
+# 3. Run the certbot command in README.md to obtain the certificate.
+# 4. Restore the original `qubix.conf` and `docker compose restart nginx`.
+# ---------------------------------------------------------------------------
+upstream qubix_web {
+    server web:3000;
+    keepalive 32;
+}
+
+server {
+    listen      80;
+    listen      [::]:80;
+    server_name qubixsolution.com www.qubixsolution.com;
+
+    location = /healthz {
+        access_log off;
+        add_header Content-Type text/plain;
+        return 200 "ok";
+    }
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        proxy_pass http://qubix_web;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Connection        "";
+    }
+}

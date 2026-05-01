@@ -1,0 +1,209 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------------------------
+ * Theme tokens
+ *
+ * Each token is stored as 3 RGB channels (or "r g b / a"), so we can use
+ * Tailwind's <alpha-value> syntax: e.g. text-fg/70.
+ *
+ * The default (:root) is the LIGHT theme so that users with no preference
+ * (or no JS) get a sensible look. The .dark class inverts to the dark theme.
+ * ------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    color-scheme: light;
+
+    --color-bg:        248 250 252;   /* slate-50 */
+    --color-surface:   255 255 255;
+    --color-surface-2: 241 245 249;   /* slate-100 */
+    --color-fg:         15  23  42;   /* slate-900 */
+    --color-fg-soft:    15  23  42;
+    --color-on-brand:  255 255 255;
+
+    --glow-primary: 124  58 237 / 0.10;
+    --glow-accent:   34 211 238 / 0.10;
+    --glow-magenta: 236  72 153 / 0.10;
+
+    --grid-line:    15 23 42 / 0.06;
+    --scrollbar-track: 241 245 249;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    --color-bg:          5   6  15;
+    --color-surface:    11  13  31;
+    --color-surface-2:  17  20  43;
+    --color-fg:        255 255 255;
+    --color-fg-soft:   228 228 231;
+    --color-on-brand:  255 255 255;
+
+    --glow-primary: 124  58 237 / 0.30;
+    --glow-accent:   34 211 238 / 0.18;
+    --glow-magenta: 236  72 153 / 0.18;
+
+    --grid-line:    255 255 255 / 0.04;
+    --scrollbar-track: 11 13 31;
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body {
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-fg-soft));
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans;
+    background-image:
+      radial-gradient(
+        ellipse 80% 50% at 50% -10%,
+        rgb(var(--glow-primary)),
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 100% 100%,
+        rgb(var(--glow-accent)),
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 40% at 0% 100%,
+        rgb(var(--glow-magenta)),
+        transparent 60%
+      );
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: rgba(124, 58, 237, 0.45);
+    color: #ffffff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgb(var(--scrollbar-track));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #7c3aed, #22d3ee);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #8b5cf6, #67e8f9);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-brand bg-clip-text text-transparent;
+    background-size: 200% 200%;
+    animation: gradient 8s ease infinite;
+  }
+
+  .card-glass {
+    @apply rounded-2xl border border-fg/[0.08] bg-fg/[0.02] backdrop-blur-md;
+  }
+
+  :root:not(.dark) .card-glass {
+    background-color: rgb(var(--color-surface) / 0.7);
+    border-color: rgb(var(--color-fg) / 0.08);
+    box-shadow:
+      0 1px 0 0 rgb(var(--color-fg) / 0.02) inset,
+      0 1px 3px 0 rgb(var(--color-fg) / 0.04);
+  }
+
+  .glow-ring {
+    box-shadow:
+      0 0 0 1px rgb(var(--color-fg) / 0.06),
+      0 10px 60px -15px rgba(124, 58, 237, 0.5);
+  }
+
+  .btn-primary {
+    @apply relative inline-flex min-h-11 items-center justify-center gap-2 overflow-hidden rounded-full
+      bg-gradient-brand px-6 py-3 text-sm font-semibold text-white
+      shadow-glow transition-all duration-300 hover:shadow-[0_0_60px_-10px_rgba(124,58,237,0.8)]
+      hover:scale-[1.02] active:scale-[0.99];
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full
+      border border-fg/10 bg-fg/[0.03] px-6 py-3 text-sm font-semibold
+      text-fg/90 backdrop-blur transition-all duration-300
+      hover:bg-fg/[0.06] hover:border-fg/20;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-2 rounded-full border border-fg/10
+      bg-fg/[0.04] px-3 py-1 text-xs font-medium text-fg/80
+      backdrop-blur;
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgb(var(--grid-line)) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--grid-line)) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(
+      ellipse at center,
+      black 30%,
+      transparent 75%
+    );
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--color-fg) / 0.08),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
