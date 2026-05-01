@@ -1,154 +1,134 @@
 # Deployment Guide — Qubix Solutions
 
-This guide walks you through deploying the Qubix Solutions website to a
-**Hetzner Cloud VPS** using **Docker**, **Docker Compose**, **Nginx** and
-**Let's Encrypt SSL** — from a fresh server to a live HTTPS site at
-`https://qubixsolution.com`.
+Deploy the Qubix Solutions website to a **Hetzner Cloud VPS** (or any Linux
+server) in **3 commands** once the server is set up:
 
-> Estimated time: **30–45 minutes** for a first-time deploy.
+```bash
+git clone <your-repo-url> /opt/qubix && cd /opt/qubix
+docker compose up -d
+bash scripts/enable-ssl.sh
+```
+
+That's it. The site is live at `https://qubixsolution.com` with
+auto-renewing SSL.
+
+> Estimated time for a first-time deploy: **20–30 minutes** (mostly waiting
+> for DNS to propagate).
+
+---
+
+## How it works (60-second overview)
+
+`docker compose up -d` launches **four** containers in this order:
+
+1. **`init-certs`** — runs once. If no SSL certificate exists yet, it
+   generates a self-signed *dummy* cert so Nginx can start. Exits.
+2. **`web`** — Next.js app on port 3000 (internal).
+3. **`nginx`** — TLS terminator + reverse proxy on ports 80/443.
+4. **`certbot`** — background daemon that auto-renews the SSL cert every
+   12 hours.
+
+After the first boot the site is technically reachable, but HTTPS shows a
+"not trusted" warning because of the dummy cert. Running
+`bash scripts/enable-ssl.sh` swaps it for a real Let's Encrypt cert and
+reloads Nginx — done.
 
 ---
 
 ## Table of contents
 
-1. [Architecture overview](#1-architecture-overview)
-2. [Prerequisites](#2-prerequisites)
-3. [Provision a Hetzner server](#3-provision-a-hetzner-server)
-4. [Configure DNS](#4-configure-dns)
-5. [Server setup — install Docker](#5-server-setup--install-docker)
-6. [Push the code & clone on the server](#6-push-the-code--clone-on-the-server)
-7. [Configure environment variables](#7-configure-environment-variables)
-8. [Issue the SSL certificate](#8-issue-the-ssl-certificate)
-9. [Start the full stack](#9-start-the-full-stack)
-10. [Verify the deployment](#10-verify-the-deployment)
-11. [Updating the site](#11-updating-the-site)
-12. [Day-2 operations](#12-day-2-operations)
-13. [Backups](#13-backups)
-14. [Troubleshooting](#14-troubleshooting)
-15. [Rollback](#15-rollback)
-16. [Hardening the server (optional but recommended)](#16-hardening-the-server-optional-but-recommended)
+1. [Prerequisites](#1-prerequisites)
+2. [Provision a Hetzner server](#2-provision-a-hetzner-server)
+3. [Configure DNS](#3-configure-dns)
+4. [One-time server setup](#4-one-time-server-setup)
+5. [The 3-command deploy](#5-the-3-command-deploy)
+6. [Verify the deployment](#6-verify-the-deployment)
+7. [Updating the site](#7-updating-the-site)
+8. [Day-2 operations](#8-day-2-operations)
+9. [Backups](#9-backups)
+10. [Troubleshooting](#10-troubleshooting)
+11. [Rollback](#11-rollback)
+12. [Hardening (optional)](#12-hardening-optional)
+13. [CI/CD (optional)](#13-cicd-optional)
 
 ---
 
-## 1. Architecture overview
+## 1. Prerequisites
 
-```
-                        ┌────────────────────────────┐
-   Internet ──443──▶    │  qubix-nginx               │
-                        │  (Nginx 1.27 reverse proxy)│
-                        │  • TLS termination          │
-                        │  • HTTP/2, gzip, caching    │
-                        │  • Rate limiting            │
-                        └────────────┬───────────────┘
-                                     │ proxy_pass (port 3000)
-                                     ▼
-                        ┌────────────────────────────┐
-                        │  qubix-web                 │
-                        │  Next.js 16 (standalone)   │
-                        └────────────────────────────┘
-
-                        ┌────────────────────────────┐
-                        │  qubix-certbot             │
-                        │  Auto-renews TLS every 12h │
-                        └────────────────────────────┘
-```
-
-Three Docker containers, one shared bridge network, two host volumes
-(`./certbot/conf` for certs, `./certbot/www` for ACME challenges).
-
----
-
-## 2. Prerequisites
-
-You'll need:
-
-- A **Hetzner Cloud** account (or any other VPS provider — DigitalOcean,
-  AWS Lightsail and Linode work identically).
-- Your **domain** (`qubixsolution.com`) registered with any registrar.
-- A local machine with **git** installed.
-- Your code pushed to a Git repository (GitHub, GitLab, Bitbucket, or a
-  self-hosted Gitea — anywhere reachable from the server).
-- An **SSH key pair** on your local machine (`~/.ssh/id_ed25519.pub` or
-  similar). If you don't have one:
+- A Hetzner Cloud account (or any VPS provider — DigitalOcean, Linode,
+  AWS Lightsail all work identically).
+- A domain (`qubixsolution.com`) you control.
+- Code pushed to a Git remote (GitHub / GitLab / etc.).
+- An SSH key pair on your local machine. If you don't have one:
 
   ```bash
-  ssh-keygen -t ed25519 -C "your.email@example.com"
+  ssh-keygen -t ed25519 -C "you@example.com"
   ```
 
 ---
 
-## 3. Provision a Hetzner server
+## 2. Provision a Hetzner server
 
-1. Log in to [console.hetzner.cloud](https://console.hetzner.cloud).
-2. Click **+ New Project** → name it `qubix-solutions`.
-3. Click **+ Add Server** and pick:
-   - **Location**: closest to your audience (e.g. `Helsinki` or `Falkenstein`
-     for EU, `Ashburn, VA` for North America).
+1. [console.hetzner.cloud](https://console.hetzner.cloud) → **+ New Project**
+   → name it `qubix-solutions`.
+2. **+ Add Server**:
+   - **Location**: closest to your audience.
    - **Image**: **Ubuntu 24.04**.
-   - **Type**:
-     - `CX22` (2 vCPU / 4 GB RAM) — fine for the marketing site (≈ €4–5/mo).
-     - `CX32` (4 vCPU / 8 GB RAM) — recommended if you'll also self-host n8n.
-   - **Networking**: leave IPv4 + IPv6 enabled.
-   - **SSH keys**: paste the contents of your `~/.ssh/id_ed25519.pub`.
+   - **Type**: `CX22` (2 vCPU / 4 GB) is plenty for the marketing site.
+   - **SSH keys**: paste your `~/.ssh/id_ed25519.pub`.
    - **Name**: `qubix-prod`.
-4. Click **Create & Buy now**.
-
-After ~10 seconds Hetzner gives you a public IPv4. Note it down — we'll call
-it `<SERVER_IP>`.
-
-5. Optional: enable **automatic backups** (€1/mo, daily snapshots).
+3. Click **Create & Buy now**. Note the public IPv4 → call it `<SERVER_IP>`.
+4. *(Optional)* enable **automatic backups** (€1/mo).
 
 ---
 
-## 4. Configure DNS
+## 3. Configure DNS
 
-Go to your domain registrar (Namecheap, Cloudflare, Hostinger, etc.) and
-create the following records:
+At your registrar (Namecheap / Cloudflare / Hostinger / …) add:
 
-| Type    | Name  | Value           | TTL  |
-| ------- | ----- | --------------- | ---- |
-| `A`     | `@`   | `<SERVER_IP>`   | 300  |
-| `A`     | `www` | `<SERVER_IP>`   | 300  |
-| `AAAA`  | `@`   | `<SERVER_IPv6>` | 300  |
-| `AAAA`  | `www` | `<SERVER_IPv6>` | 300  |
-| `CAA`   | `@`   | `0 issue "letsencrypt.org"` | 300 |
-| `MX`    | `@`   | (your email provider, if any) | 300 |
+| Type   | Name  | Value                                 | TTL |
+| ------ | ----- | ------------------------------------- | --- |
+| `A`    | `@`   | `<SERVER_IP>`                         | 300 |
+| `A`    | `www` | `<SERVER_IP>`                         | 300 |
+| `AAAA` | `@`   | `<SERVER_IPv6>`                       | 300 |
+| `AAAA` | `www` | `<SERVER_IPv6>`                       | 300 |
+| `CAA`  | `@`   | `0 issue "letsencrypt.org"`           | 300 |
 
-Verify propagation:
+Wait until DNS resolves (usually 1–5 minutes):
 
 ```bash
 dig +short qubixsolution.com
 dig +short www.qubixsolution.com
 ```
 
-Both should return `<SERVER_IP>`. **Do not proceed until DNS resolves
-correctly** — Let's Encrypt will refuse to issue a certificate otherwise.
+Both should return `<SERVER_IP>`. **Don't continue until they do** — Let's
+Encrypt will refuse to issue certs otherwise.
 
 ---
 
-## 5. Server setup — install Docker
+## 4. One-time server setup
 
-SSH into the server:
+SSH in and install Docker. **You only do this once per server.**
 
 ```bash
 ssh root@<SERVER_IP>
-```
 
-Update packages and install Docker + Docker Compose plugin:
-
-```bash
 apt update && apt upgrade -y
 apt install -y curl ca-certificates git ufw
 
-# Official Docker install (one-liner)
+# Official Docker installer
 curl -fsSL https://get.docker.com | sh
 
-# Verify
-docker --version
-docker compose version
+# Firewall
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow OpenSSH
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw --force enable
 ```
 
-Create a non-root user for deployments (optional but recommended):
+*(Recommended)* create a non-root user for deploys:
 
 ```bash
 adduser deploy
@@ -156,237 +136,149 @@ usermod -aG docker,sudo deploy
 mkdir -p /home/deploy/.ssh
 cp ~/.ssh/authorized_keys /home/deploy/.ssh/
 chown -R deploy:deploy /home/deploy/.ssh
-chmod 700 /home/deploy/.ssh
-chmod 600 /home/deploy/.ssh/authorized_keys
-
-# From now on you can SSH as deploy:
-# ssh deploy@<SERVER_IP>
-```
-
-Enable a basic firewall:
-
-```bash
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow OpenSSH
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-ufw status
+chmod 700 /home/deploy/.ssh && chmod 600 /home/deploy/.ssh/authorized_keys
+# From now on: ssh deploy@<SERVER_IP>
 ```
 
 ---
 
-## 6. Push the code & clone on the server
+## 5. The 3-command deploy
 
-### 6.1 On your local machine — push to a remote repo
+SSH in (as `deploy` if you created that user) and run:
 
-If you haven't yet:
-
-```bash
-cd /path/to/Qubix_Solutions_portfolio_website
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin git@github.com:<your-org>/qubix-solutions-portfolio.git
-git push -u origin main
-```
-
-### 6.2 On the server — clone
+### Command 1 — clone and configure
 
 ```bash
-ssh deploy@<SERVER_IP>
-cd /opt
-sudo mkdir -p qubix && sudo chown deploy:deploy qubix
-cd qubix
-
-# HTTPS (works without server-side SSH keys)
-git clone https://github.com/<your-org>/qubix-solutions-portfolio.git .
-
-# OR: SSH (requires the server's public key added to GitHub deploy keys)
-# git clone git@github.com:<your-org>/qubix-solutions-portfolio.git .
-```
-
----
-
-## 7. Configure environment variables
-
-```bash
+sudo mkdir -p /opt/qubix && sudo chown $USER:$USER /opt/qubix
+git clone https://github.com/<your-org>/qubix-solutions-portfolio.git /opt/qubix
 cd /opt/qubix
+
 cp .env.example .env
-nano .env   # or: vim .env
+# Edit .env if needed (defaults are fine for the marketing site):
+#   NEXT_PUBLIC_SITE_URL=https://qubixsolution.com
+#   NEXT_PUBLIC_SUPPORT_EMAIL=support@qubixsolution.com
 ```
 
-Set the values:
-
-```env
-NEXT_PUBLIC_SITE_URL=https://qubixsolution.com
-NEXT_PUBLIC_SUPPORT_EMAIL=support@qubixsolution.com
-```
-
-Save and close.
-
-> If you later wire the contact form to a service like Resend, Postmark or a
-> Slack webhook, add those secrets here (and reference them in
-> `src/app/api/contact/route.ts`).
-
----
-
-## 8. Issue the SSL certificate
-
-The repository ships with a one-shot bootstrap script that:
-
-1. Generates a temporary self-signed certificate so Nginx can start.
-2. Boots the Next.js + Nginx containers.
-3. Uses Certbot's webroot challenge to issue a real Let's Encrypt cert for
-   both `qubixsolution.com` and `www.qubixsolution.com`.
-4. Reloads Nginx with the real certificate.
-
-**(Optional) Test against the staging server first**
-
-If you've never used Let's Encrypt for this domain, you can dry-run against
-their staging server (the rate limits are much higher). Edit
-`scripts/init-letsencrypt.sh` and change `STAGING=0` to `STAGING=1`.
-After a successful staging run, set it back to `0` and re-run.
-
-**Run the bootstrap**
+### Command 2 — start the stack
 
 ```bash
-cd /opt/qubix
-sudo bash scripts/init-letsencrypt.sh
+docker compose up -d
 ```
 
-Expected output (last few lines):
+This will:
 
-```
-### Reloading nginx ...
-### Done. Your site should be reachable at https://qubixsolution.com
-```
+- Build the Next.js production image (~2 min the first time).
+- Generate a self-signed dummy cert (so Nginx can boot).
+- Bring up `web`, `nginx`, and the `certbot` renewer.
 
----
-
-## 9. Start the full stack
+Verify with:
 
 ```bash
-cd /opt/qubix
-docker compose up -d --build
 docker compose ps
 ```
 
-You should see three healthy containers:
+You should see `qubix-web` (healthy), `qubix-nginx` (healthy),
+`qubix-certbot` (running). At this point the site is reachable on port 80
+and on port 443 with an untrusted (dummy) cert.
+
+### Command 3 — issue the real SSL certificate
+
+```bash
+bash scripts/enable-ssl.sh
+```
+
+Output:
 
 ```
-NAME            IMAGE                       STATUS                    PORTS
-qubix-web       qubix-solutions/web:latest  Up (healthy)              3000/tcp
-qubix-nginx     nginx:1.27-alpine           Up (healthy)              0.0.0.0:80->80, 0.0.0.0:443->443
-qubix-certbot   certbot/certbot:latest      Up                        -
+▶ 1/4  Preflight checks
+✓ containers are running
+▶ 2/4  Removing dummy certificate (if present)
+✓ dummy certificate removed
+▶ 3/4  Requesting Let's Encrypt certificate for: qubixsolution.com www.qubixsolution.com
+…
+✓ real certificate issued
+▶ 4/4  Reloading Nginx
+✓ Nginx reloaded
+
+✓ All done.  Your site is now live at:
+    https://qubixsolution.com
+
+Auto-renewal is handled by the 'certbot' container (every 12h).
 ```
+
+> **First time setting up SSL?** Run with `STAGING=1` first to test:
+> `STAGING=1 bash scripts/enable-ssl.sh`. Let's Encrypt's staging server has
+> much higher rate limits. Once that succeeds, run again without `STAGING`
+> to issue the real cert.
 
 ---
 
-## 10. Verify the deployment
-
-### 10.1 Quick checks
+## 6. Verify the deployment
 
 ```bash
-# Health endpoint (Nginx)
-curl -I http://qubixsolution.com/healthz
-
-# HTTPS redirect
-curl -I http://qubixsolution.com
-# → expect: HTTP/1.1 301 Moved Permanently  Location: https://...
-
-# Live HTTPS response
+# HTTPS works and returns 200
 curl -I https://qubixsolution.com
-# → expect: HTTP/2 200, strict-transport-security header
 
 # www → apex redirect
 curl -I https://www.qubixsolution.com
-# → expect: HTTP/2 301, location: https://qubixsolution.com/
 
-# SEO endpoints
-curl https://qubixsolution.com/sitemap.xml | head -20
-curl https://qubixsolution.com/robots.txt
+# Auto-generated SEO endpoints
+curl -s https://qubixsolution.com/sitemap.xml | head -10
+curl -s https://qubixsolution.com/robots.txt
 ```
 
-### 10.2 Browser checks
+In a browser:
 
-1. Visit **https://qubixsolution.com** — site loads, padlock icon shown.
-2. Open DevTools → **Lighthouse** → run for "Mobile" with all categories
-   checked. Targets:
-   - Performance ≥ 95
-   - Accessibility ≥ 95
-   - Best Practices ≥ 95
-   - SEO = 100
-3. Toggle the theme button — light/dark should switch instantly with no
-   flash on reload.
-4. Submit the contact form — should show the green confirmation card.
+1. Open `https://qubixsolution.com` — padlock icon shown, no warnings.
+2. DevTools → **Lighthouse** → Mobile, all categories. Targets:
+   - Performance ≥ 95 · Accessibility ≥ 95 · Best Practices ≥ 95 · SEO 100
+3. Click the theme toggle in the header — switches light/dark.
+4. Submit the contact form — green confirmation card appears.
 
-### 10.3 SSL grade
+### SSL grade
 
 Run [SSL Labs](https://www.ssllabs.com/ssltest/analyze.html?d=qubixsolution.com)
-— you should get an **A** or **A+** rating thanks to the OCSP stapling and
-strong cipher suite preconfigured in `nginx/conf.d/qubix.conf`.
+— you should get **A** or **A+**.
 
-### 10.4 Search engine setup
+### Search engines
 
-1. Register the site in
+1. Add the site to
    [Google Search Console](https://search.google.com/search-console).
-2. Verify ownership using the **HTML tag** method — paste the meta tag into
-   `src/app/layout.tsx` (inside `<head>`), redeploy, then click verify.
-3. Submit `https://qubixsolution.com/sitemap.xml`.
-4. Repeat for [Bing Webmaster Tools](https://www.bing.com/webmasters).
+2. Submit `https://qubixsolution.com/sitemap.xml`.
+3. Repeat in [Bing Webmaster Tools](https://www.bing.com/webmasters).
 
 ---
 
-## 11. Updating the site
+## 7. Updating the site
 
-### 11.1 Standard update
+Push your changes locally, then on the server:
 
 ```bash
-ssh deploy@<SERVER_IP>
 cd /opt/qubix
 git pull
 docker compose up -d --build web
 ```
 
-Docker rebuilds the new image, then swaps it in. Nginx keeps serving traffic
-the whole time — there is **no downtime** for code updates.
+Docker rebuilds the new `web` image and swaps it in — Nginx keeps serving
+traffic the whole time, so there's **no downtime** for code changes.
 
-### 11.2 Update Nginx config
-
-After editing anything under `nginx/`:
+For Nginx config changes:
 
 ```bash
-docker compose exec nginx nginx -t      # validate config
-docker compose exec nginx nginx -s reload
-```
-
-### 11.3 Pull a new Next.js / dependency version
-
-```bash
-# locally
-npm update next react react-dom
-npm run build      # smoke test
-git commit -am "chore: bump dependencies"
-git push
-
-# on the server
-git pull
-docker compose up -d --build web
+docker compose exec nginx nginx -t        # validate
+docker compose exec nginx nginx -s reload # apply
 ```
 
 ---
 
-## 12. Day-2 operations
+## 8. Day-2 operations
 
 ### Logs
 
 ```bash
-docker compose logs -f web        # Next.js app logs
-docker compose logs -f nginx      # Nginx access + error logs
-docker compose logs --tail=200    # all services, last 200 lines
+docker compose logs -f web        # Next.js
+docker compose logs -f nginx      # access + error
+docker compose logs -f certbot    # SSL renewal
 ```
 
 ### Container shell
@@ -399,93 +291,103 @@ docker compose exec nginx sh
 ### Resource usage
 
 ```bash
-docker stats          # live CPU / memory per container
-df -h                 # disk usage
-free -h               # RAM
+docker stats
+df -h
+free -h
 ```
 
-### Restart everything (rare)
+### Restart everything
 
 ```bash
 docker compose restart
 ```
 
-### Stop everything (e.g. for maintenance)
+### Stop everything
 
 ```bash
-docker compose down            # keeps volumes + certs
-docker compose down -v         # also removes volumes (DESTROYS certs!)
+docker compose down              # keeps SSL certs and data
+docker compose down -v           # also wipes volumes (DESTROYS certs!)
 ```
 
 ### Force certificate renewal
 
-Certbot auto-renews every 12 h, but if you need to force it:
-
 ```bash
-docker compose run --rm certbot renew --force-renewal
+docker compose run --rm --entrypoint certbot certbot renew --force-renewal
 docker compose exec nginx nginx -s reload
 ```
 
 ---
 
-## 13. Backups
+## 9. Backups
 
-The marketing site itself is stateless (no database). The only data on disk
-worth backing up are the **Let's Encrypt certificates**:
+The marketing site is stateless — the only on-disk state worth backing up
+is `./certbot/conf` (your SSL certs). Two options:
+
+**a)** Enable Hetzner's automatic snapshots (€1/mo) — easiest.
+
+**b)** Daily tarball:
 
 ```bash
-# On the server, daily cron
-sudo tar -czf /var/backups/qubix-certs-$(date +%F).tar.gz /opt/qubix/certbot
+sudo crontab -e
+# Add:
+0 3 * * * tar -czf /var/backups/qubix-certs-$(date +\%F).tar.gz /opt/qubix/certbot
 ```
 
-Or simpler: enable Hetzner's **automated backups** when creating the server
-(€1/mo). Snapshots are stored off-host and can be restored from the console.
-
-If you later add a database (Postgres for the contact form, e.g.), add it to
-`docker-compose.yml` with a named volume and back up that volume regularly.
+If you later add a database (e.g. Postgres for the contact form), back up
+its named volume the same way.
 
 ---
 
-## 14. Troubleshooting
+## 10. Troubleshooting
 
-### Site shows a "Welcome to Nginx" default page
+### `docker compose up -d` hangs at the build step
 
-`docker-compose.yml` failed to mount the custom config. Check:
+First build downloads ~300 MB of base images and dependencies. On a slow
+connection it can take 3–5 min. Watch progress with:
 
 ```bash
-ls /opt/qubix/nginx/conf.d/
+docker compose build --progress=plain
+```
+
+### `enable-ssl.sh` fails with `DNS problem: NXDOMAIN`
+
+Your A records aren't pointing at the server yet. Wait for propagation
+(`dig +short qubixsolution.com`), then re-run.
+
+### `enable-ssl.sh` fails with `Connection refused` on port 80
+
+Either:
+
+- A firewall is blocking port 80 → `ufw allow 80/tcp`
+- Nginx isn't running → `docker compose ps` and `docker compose logs nginx`
+- Another service is using port 80 → `sudo lsof -i :80`
+
+### Site shows the default "Welcome to Nginx" page
+
+The custom config didn't mount. Check:
+
+```bash
+docker compose exec nginx ls /etc/nginx/conf.d/
 docker compose exec nginx cat /etc/nginx/conf.d/qubix.conf
 ```
 
-### SSL handshake fails / browser warns "not secure"
-
-```bash
-docker compose logs certbot
-docker compose exec nginx nginx -t
-docker compose restart nginx
-```
-
-If Certbot errors with `DNS problem: NXDOMAIN`, your A records aren't
-pointing at the server yet — wait for DNS to propagate.
-
-### "502 Bad Gateway"
+### `502 Bad Gateway`
 
 The Next.js container isn't healthy:
 
 ```bash
 docker compose ps
-docker compose logs web --tail=100
+docker compose logs web --tail=200
 ```
 
-Common causes: build failed, port mismatch, OOM kill. Restart:
+Common fixes:
 
 ```bash
-docker compose up -d --build web
+docker compose up -d --build web   # rebuild
+docker compose restart web         # restart
 ```
 
 ### Out of disk space
-
-Old images and the build cache pile up over time:
 
 ```bash
 docker system df
@@ -493,40 +395,31 @@ docker image prune -af
 docker builder prune -af
 ```
 
-### Can't pull from Git on the server
+### Certificate is still untrusted after running enable-ssl.sh
 
-If you're using SSH for cloning, generate a deploy key on the server:
+If you ran with `STAGING=1`, the cert is signed by Let's Encrypt's staging
+CA (not browser-trusted). Re-run **without** `STAGING`:
 
 ```bash
-ssh-keygen -t ed25519 -C "qubix-prod" -f ~/.ssh/id_ed25519 -N ""
-cat ~/.ssh/id_ed25519.pub
+bash scripts/enable-ssl.sh
 ```
 
-Then add that public key to your repo's **Deploy keys** in GitHub/GitLab.
-
-### Health check failing
+### Containers won't start because of "permission denied" on `./certbot/conf`
 
 ```bash
-docker compose exec web wget -qO- http://127.0.0.1:3000/
-docker compose exec nginx wget -qO- http://127.0.0.1/healthz
-```
-
-If the first works but the second doesn't, the issue is in Nginx → web
-networking. Make sure both containers are on the `qubix-net` network:
-
-```bash
-docker network inspect qubix-solutions_qubix-net
+sudo chown -R $USER:$USER /opt/qubix/certbot
+docker compose up -d
 ```
 
 ---
 
-## 15. Rollback
+## 11. Rollback
 
-If a deploy ships a bad release, roll back to the previous Git SHA:
+Revert to the last good commit:
 
 ```bash
 cd /opt/qubix
-git log --oneline -10           # find the last good SHA
+git log --oneline -10           # find the SHA
 git checkout <good-sha>
 docker compose up -d --build web
 ```
@@ -540,69 +433,58 @@ docker compose up -d --build web
 
 ---
 
-## 16. Hardening the server (optional but recommended)
+## 12. Hardening (optional)
 
-### 16.1 Disable root SSH login
-
-After confirming you can log in as `deploy`:
+### Disable root SSH
 
 ```bash
 sudo nano /etc/ssh/sshd_config
-# Set:
 #   PermitRootLogin no
 #   PasswordAuthentication no
 sudo systemctl restart ssh
 ```
 
-### 16.2 Enable unattended security upgrades
+### Unattended security upgrades
 
 ```bash
 sudo apt install -y unattended-upgrades
 sudo dpkg-reconfigure --priority=low unattended-upgrades
 ```
 
-### 16.3 Add Fail2Ban
+### Fail2Ban
 
 ```bash
 sudo apt install -y fail2ban
 sudo systemctl enable --now fail2ban
 ```
 
-### 16.4 Put Cloudflare in front (optional)
+### Cloudflare in front (optional)
 
-For DDoS protection, free CDN and analytics:
+For DDoS protection / free CDN:
 
-1. Add `qubixsolution.com` to a free Cloudflare account.
-2. Switch your registrar's nameservers to Cloudflare's.
-3. In Cloudflare DNS, set the A records' **proxy status** to **Proxied
-   (orange cloud)**.
-4. Set SSL/TLS mode to **Full (strict)**.
-5. Update Nginx `set_real_ip_from` blocks (already configured for common
-   private ranges; add Cloudflare's IPv4/IPv6 ranges from
-   [cloudflare.com/ips](https://www.cloudflare.com/ips/) if you need
-   accurate visitor IPs in logs).
+1. Add the domain to Cloudflare (free plan).
+2. Switch your nameservers at the registrar to Cloudflare's.
+3. Set the A records to **Proxied** (orange cloud).
+4. SSL/TLS mode: **Full (strict)**.
 
 ---
 
-## 17. CI/CD (optional)
+## 13. CI/CD (optional)
 
-For zero-touch deploys on every push to `main`, add a GitHub Actions
-workflow at `.github/workflows/deploy.yml`:
+Auto-deploy on every push to `main` with GitHub Actions. Create
+`.github/workflows/deploy.yml`:
 
 ```yaml
 name: Deploy
 on:
   push:
     branches: [main]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: deploy
@@ -614,48 +496,44 @@ jobs:
             docker image prune -f
 ```
 
-Add three secrets in **GitHub → Settings → Secrets and variables → Actions**:
+Add secrets in **GitHub → Settings → Secrets and variables → Actions**:
 
-| Secret     | Value                                    |
-| ---------- | ---------------------------------------- |
-| `SSH_HOST` | `<SERVER_IP>`                            |
-| `SSH_KEY`  | The **private** key matching the deploy user's `~/.ssh/authorized_keys` |
+| Secret     | Value                                                        |
+| ---------- | ------------------------------------------------------------ |
+| `SSH_HOST` | `<SERVER_IP>`                                                |
+| `SSH_KEY`  | The **private** key matching the deploy user's authorized_keys |
 
 After this, every `git push origin main` triggers a deploy.
 
 ---
 
-## Quick reference — common commands
+## Cheat sheet
 
 ```bash
-# Logs (one-shot)
-docker compose logs --tail=100 web
+# First-time deploy (3 commands after server setup)
+git clone <repo> /opt/qubix && cd /opt/qubix && cp .env.example .env
+docker compose up -d
+bash scripts/enable-ssl.sh
 
-# Logs (follow)
-docker compose logs -f web
-
-# Restart a single service
-docker compose restart web
-
-# Rebuild + redeploy after code changes
+# Updates
 git pull && docker compose up -d --build web
 
-# Reload Nginx after editing nginx/conf.d/*.conf
+# Logs
+docker compose logs -f web
+docker compose logs -f nginx
+
+# Restart / reload
+docker compose restart
 docker compose exec nginx nginx -s reload
 
-# Force renew SSL
-docker compose run --rm certbot renew --force-renewal && \
+# Force SSL renewal
+docker compose run --rm --entrypoint certbot certbot renew --force-renewal && \
   docker compose exec nginx nginx -s reload
 
-# Container shell
-docker compose exec web sh
-
-# Disk cleanup
+# Cleanup
 docker system prune -af
 ```
 
 ---
 
-## Need help?
-
-Email **[support@qubixsolution.com](mailto:support@qubixsolution.com)**.
+Need help? Email **[support@qubixsolution.com](mailto:support@qubixsolution.com)**.

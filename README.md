@@ -99,91 +99,40 @@ The favicon and OG image live in `public/` as crisp, scalable SVGs.
 
 ## Deployment to Hetzner (Docker + Nginx)
 
-> **For step-by-step instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).**
-> The condensed version is below.
+> **Full guide: [DEPLOYMENT.md](./DEPLOYMENT.md).** The TL;DR is below.
 
-### 0. Provision the server
-
-1. Create a Hetzner Cloud server (CX22 or larger, Ubuntu 24.04).
-2. Point your DNS **A records** at the server's IP:
-
-   | Host              | Type | Value                |
-   | ----------------- | ---- | -------------------- |
-   | `qubixsolution.com`     | A    | `<your.server.ip>`   |
-   | `www.qubixsolution.com` | A    | `<your.server.ip>`   |
-
-3. SSH in and install Docker:
-
-   ```bash
-   curl -fsSL https://get.docker.com | sudo sh
-   sudo usermod -aG docker $USER
-   # log out and back in, or run: newgrp docker
-   ```
-
-### 1. Clone the repo
+After provisioning the server (Ubuntu + Docker installed, DNS pointing at it):
 
 ```bash
-git clone <your-repo-url> qubix-solutions
-cd qubix-solutions
+# 1. Clone & configure
+git clone <your-repo-url> /opt/qubix && cd /opt/qubix
 cp .env.example .env
+
+# 2. Start the stack (auto-generates a dummy cert so Nginx can boot)
+docker compose up -d
+
+# 3. Replace the dummy with a real Let's Encrypt cert
+bash scripts/enable-ssl.sh
 ```
 
-### 2. Bootstrap the SSL certificate
+That's it. Site is live at **https://qubixsolution.com** with auto-renewing SSL.
 
-The included `scripts/init-letsencrypt.sh` will:
-
-1. Generate a temporary self-signed cert so Nginx can start.
-2. Start Nginx and the Next.js app.
-3. Use Certbot's webroot challenge to issue a real Let's Encrypt cert.
-4. Reload Nginx.
-
-Run it once:
-
-```bash
-sudo bash scripts/init-letsencrypt.sh
-```
-
-> If the domain isn't fully propagated yet, set `STAGING=1` at the top of the
-> script first to test against Let's Encrypt's staging server.
-
-### 3. Bring everything up
-
-```bash
-docker compose up -d --build
-docker compose ps
-```
-
-You should see three containers running:
-
-- `qubix-web`     — Next.js (port 3000, internal)
-- `qubix-nginx`   — Nginx (ports 80, 443)
-- `qubix-certbot` — Background certificate renewer
-
-Visit **https://qubixsolution.com** ✅
-
-### 4. Updating the site
+### Updating
 
 ```bash
 git pull
 docker compose up -d --build web
 ```
 
-Zero-downtime: the new container is built first, then swapped in. Nginx
-keeps serving from the old one until the new one is healthy.
+No downtime — Nginx keeps serving the old container until the new one is healthy.
 
-### 5. Logs & ops
+### Common ops
 
 ```bash
-# Tail logs
-docker compose logs -f web
-docker compose logs -f nginx
-
-# Reload Nginx after editing nginx/conf.d/*.conf
-docker compose exec nginx nginx -s reload
-
-# Renew certs manually (otherwise auto-renews every 12h)
-docker compose run --rm certbot renew
-docker compose exec nginx nginx -s reload
+docker compose logs -f web                       # app logs
+docker compose logs -f nginx                     # access + error
+docker compose exec nginx nginx -s reload        # reload nginx config
+docker compose restart                           # restart everything
 ```
 
 ## SEO checklist (already done)

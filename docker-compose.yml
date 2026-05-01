@@ -1,6 +1,44 @@
 name: qubix-solutions
 
 services:
+  # ---------------------------------------------------------------------------
+  # init-certs
+  # Runs once on `docker compose up`. If no SSL certs exist yet (first boot),
+  # generates self-signed dummies so Nginx can start successfully.
+  # `scripts/enable-ssl.sh` will replace them with real Let's Encrypt certs.
+  # ---------------------------------------------------------------------------
+  init-certs:
+    image: alpine:3.20
+    container_name: qubix-init-certs
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    environment:
+      DOMAIN: ${SSL_DOMAIN:-qubixsolution.com}
+    command: >
+      sh -c '
+        set -e;
+        DOMAIN=$${DOMAIN};
+        CERT_DIR="/etc/letsencrypt/live/$$DOMAIN";
+        if [ ! -f "$$CERT_DIR/fullchain.pem" ]; then
+          echo "[init-certs] generating self-signed dummy certificate for $$DOMAIN";
+          apk add --no-cache openssl >/dev/null;
+          mkdir -p "$$CERT_DIR";
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+            -subj "/CN=$$DOMAIN" \
+            -keyout "$$CERT_DIR/privkey.pem" \
+            -out    "$$CERT_DIR/fullchain.pem" >/dev/null 2>&1;
+          echo "[init-certs] dummy certificate ready. Run scripts/enable-ssl.sh next.";
+        else
+          echo "[init-certs] certificate already present — nothing to do.";
+        fi;
+        mkdir -p /var/www/certbot;
+      '
+    restart: "no"
+
+  # ---------------------------------------------------------------------------
+  # web — Next.js app (standalone build)
+  # ---------------------------------------------------------------------------
   web:
     build:
       context: .
@@ -25,11 +63,16 @@ services:
       retries: 3
       start_period: 20s
 
+  # ---------------------------------------------------------------------------
+  # nginx — TLS terminator + reverse proxy
+  # ---------------------------------------------------------------------------
   nginx:
     image: nginx:1.27-alpine
     container_name: qubix-nginx
     restart: unless-stopped
     depends_on:
+      init-certs:
+        condition: service_completed_successfully
       web:
         condition: service_healthy
     ports:
@@ -48,6 +91,9 @@ services:
       timeout: 5s
       retries: 3
 
+  # ---------------------------------------------------------------------------
+  # certbot — auto-renews the SSL certificate every 12h
+  # ---------------------------------------------------------------------------
   certbot:
     image: certbot/certbot:latest
     container_name: qubix-certbot
