@@ -187,17 +187,15 @@ and on port 443 with an untrusted (dummy) cert.
 bash scripts/enable-ssl.sh
 ```
 
-Output:
+Output (approximate):
 
 ```
-▶ 1/4  Preflight checks
+▶ 1/3  Preflight checks
 ✓ containers are running
-▶ 2/4  Removing dummy certificate (if present)
-✓ dummy certificate removed
-▶ 3/4  Requesting Let's Encrypt certificate for: qubixsolution.com www.qubixsolution.com
+▶ 2/3  Requesting Let's Encrypt certificate for: qubixsolution.com www.qubixsolution.com
 …
 ✓ real certificate issued
-▶ 4/4  Reloading Nginx
+▶ 3/3  Reloading Nginx
 ✓ Nginx reloaded
 
 ✓ All done.  Your site is now live at:
@@ -205,6 +203,12 @@ Output:
 
 Auto-renewal is handled by the 'certbot' container (every 12h).
 ```
+
+The script **does not delete the dummy certificate before issuance** — doing
+so would break Nginx’s HTTPS `ssl_certificate` paths and stop the whole
+process, so **port 80 would show “connection refused”** to Let’s Encrypt.
+Certbot runs with **`--force-renewal`** so the dummy is replaced in place
+after a successful challenge.
 
 > **First time setting up SSL?** Run with `STAGING=1` first to test:
 > `STAGING=1 bash scripts/enable-ssl.sh`. Let's Encrypt's staging server has
@@ -418,6 +422,34 @@ The custom config didn't mount. Check:
 docker compose exec nginx ls /etc/nginx/conf.d/
 docker compose exec nginx cat /etc/nginx/conf.d/qubix.conf
 ```
+
+### Let’s Encrypt: `connection refused` to `95.x.x.x:80`
+
+Usually **nothing is listening on port 80** (Nginx container crashed or never
+started). Common causes:
+
+1. **SSL files were deleted while Nginx still referenced them** — restore and
+   retry:
+
+   ```bash
+   docker compose run --rm init-certs
+   docker compose up -d nginx
+   docker compose ps
+   ```
+
+   Then run **`bash scripts/enable-ssl.sh`** again (use the current script;
+   it no longer removes certs before issuance).
+
+2. **Firewall** — allow HTTP from the internet:
+
+   ```bash
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   sudo ufw status
+   ```
+
+3. **Another process on port 80** — `sudo lsof -i :80` and stop the host
+   `nginx`/`apache2` if it conflicts with Docker.
 
 ### `502 Bad Gateway`
 

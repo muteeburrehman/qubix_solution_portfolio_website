@@ -2,18 +2,18 @@
 # ----------------------------------------------------------------------------
 # enable-ssl.sh
 #
-# Replaces the self-signed dummy certificate (created by the init-certs
-# container) with a real Let's Encrypt certificate, then reloads Nginx.
+# Obtains a real Let's Encrypt certificate (HTTP-01 webroot) while Nginx keeps
+# running with the existing dummy (or old) cert. Do NOT delete certs before
+# issuance — Nginx's HTTPS block references those files; removing them first
+# makes nginx refuse to start → port 80 "connection refused" for Let's Encrypt.
 #
-# Run this ONCE on the server, after `docker compose up -d`, when:
-#   • DNS for qubixsolution.com points to this server
-#   • All containers are healthy (`docker compose ps`)
+# Run when DNS A for qubixsolution.com (and www) points at this server's IPv4.
 #
 # Usage:
 #   bash scripts/enable-ssl.sh
 #
 # Optional:
-#   STAGING=1 bash scripts/enable-ssl.sh   # use Let's Encrypt's staging server
+#   STAGING=1 bash scripts/enable-ssl.sh   # Let's Encrypt staging (not browser-trusted)
 # ----------------------------------------------------------------------------
 set -euo pipefail
 
@@ -23,15 +23,14 @@ EMAIL="support@qubixsolution.com"
 STAGING="${STAGING:-0}"
 # -----------------------------------------------------------------------------
 
-# Move to repo root regardless of where the script is invoked from
 cd "$(cd "$(dirname "$0")/.." && pwd)"
 
 step() { printf "\n\033[1;36m▶ %s\033[0m\n" "$1"; }
 ok()   { printf "\033[1;32m✓\033[0m %s\n" "$1"; }
-err()  { printf "\033[1;31m✗ %s\033[0m\n" "$1" >&2; }
+err()  { printf "\033[1;31m✗\033[0m %s\n" "$1" >&2; }
 
-# ---------- 1. preflight checks ----------------------------------------------
-step "1/4  Preflight checks"
+# ---------- 1. preflight -----------------------------------------------------
+step "1/3  Preflight checks"
 
 if ! command -v docker >/dev/null 2>&1; then
   err "docker is not installed"; exit 1
@@ -39,6 +38,7 @@ fi
 
 if ! docker compose ps --status running --services 2>/dev/null | grep -qx nginx; then
   err "The 'nginx' service is not running. Start the stack first:"
+  echo  "      docker compose run --rm init-certs"
   echo  "      docker compose up -d"
   exit 1
 fi
@@ -51,21 +51,10 @@ fi
 
 ok "containers are running"
 
-# ---------- 2. remove the dummy / any previous cert --------------------------
-step "2/4  Removing dummy certificate (if present)"
+# ---------- 2. issue certificate (keep existing files until LE succeeds) -----
+step "2/3  Requesting Let's Encrypt certificate for: ${DOMAINS[*]}"
 
 PRIMARY="${DOMAINS[0]}"
-docker compose run --rm --entrypoint sh certbot -c "
-  rm -rf /etc/letsencrypt/live/${PRIMARY} \
-         /etc/letsencrypt/archive/${PRIMARY} \
-         /etc/letsencrypt/renewal/${PRIMARY}.conf
-" >/dev/null
-
-ok "dummy certificate removed"
-
-# ---------- 3. issue the real certificate ------------------------------------
-step "3/4  Requesting Let's Encrypt certificate for: ${DOMAINS[*]}"
-
 DOMAIN_ARGS=""
 for d in "${DOMAINS[@]}"; do DOMAIN_ARGS="$DOMAIN_ARGS -d $d"; done
 
@@ -75,20 +64,30 @@ if [ "$STAGING" = "1" ]; then
   echo "  (using Let's Encrypt STAGING — certs won't be browser-trusted)"
 fi
 
+# Dummy certs from init-certs do not create certbot/conf/renewal/*.conf.
+# --force-renewal only when a real LE renewal file exists (re-issue).
+FORCE_ARG=""
+if [ -f "certbot/conf/renewal/${PRIMARY}.conf" ]; then
+  FORCE_ARG="--force-renewal"
+  echo "  (existing Let's Encrypt renewal — using --force-renewal)"
+fi
+
 docker compose run --rm --entrypoint certbot certbot certonly \
   --webroot -w /var/www/certbot \
   $STAGING_ARG \
+  --cert-name "$PRIMARY" \
   --email "$EMAIL" \
   $DOMAIN_ARGS \
   --rsa-key-size 4096 \
   --agree-tos \
   --no-eff-email \
-  --non-interactive
+  --non-interactive \
+  $FORCE_ARG
 
 ok "real certificate issued"
 
-# ---------- 4. reload nginx --------------------------------------------------
-step "4/4  Reloading Nginx"
+# ---------- 3. reload nginx --------------------------------------------------
+step "3/3  Reloading Nginx"
 
 docker compose exec nginx nginx -t >/dev/null
 docker compose exec nginx nginx -s reload
