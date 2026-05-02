@@ -38,4 +38,3 @@ next-env.d.ts
 # SSL / Let's Encrypt state (generated on the server, never commit)
 /certbot/conf/
 /certbot/www/
-nginx/conf.d/qubix.conf
