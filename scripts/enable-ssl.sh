@@ -64,10 +64,25 @@ if [ "$STAGING" = "1" ]; then
   echo "  (using Let's Encrypt STAGING — certs won't be browser-trusted)"
 fi
 
-# Dummy certs from init-certs do not create certbot/conf/renewal/*.conf.
+# Dummy certs from init-certs create live/<domain>/ but NOT renewal/*.conf.
+# Certbot errors with "live directory exists" if we only use --cert-name.
+# Move dummy dirs aside once; running nginx keeps old cert files open until reload.
+LE_CONF="certbot/conf"
+LIVE="${LE_CONF}/live/${PRIMARY}"
+RENEWAL="${LE_CONF}/renewal/${PRIMARY}.conf"
+ARCHIVE="${LE_CONF}/archive/${PRIMARY}"
+if [ -d "$LIVE" ] && [ ! -f "$RENEWAL" ]; then
+  ts="$(date +%Y%m%d%H%M%S)"
+  echo "  (init-certs dummy detected — moving aside: ${LIVE})"
+  mv "$LIVE" "${LIVE}.bak-init-${ts}"
+  if [ -d "$ARCHIVE" ]; then
+    mv "$ARCHIVE" "${ARCHIVE}.bak-init-${ts}"
+  fi
+fi
+
 # --force-renewal only when a real LE renewal file exists (re-issue).
 FORCE_ARG=""
-if [ -f "certbot/conf/renewal/${PRIMARY}.conf" ]; then
+if [ -f "$RENEWAL" ]; then
   FORCE_ARG="--force-renewal"
   echo "  (existing Let's Encrypt renewal — using --force-renewal)"
 fi
