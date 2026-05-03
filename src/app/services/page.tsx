@@ -9,7 +9,7 @@ import { Reveal } from '@/components/ui/Reveal';
 export const metadata: Metadata = {
   title: 'Services — AI, Web, Mobile & E-commerce',
   description:
-    'Explore our services: AI & LLM development, chatbots, n8n automation, React.js, Angular, Flutter mobile apps, Shopify, WordPress e-commerce and digital marketing.',
+    'Explore our services: AI & LLM development, chatbots, n8n automation, Python backends with FastAPI and Django REST Framework, React.js, Angular, Flutter mobile apps, Shopify, WordPress e-commerce and digital marketing.',
   alternates: { canonical: '/services' },
 };
 

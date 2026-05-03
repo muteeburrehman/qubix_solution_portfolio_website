@@ -6,15 +6,19 @@ export const siteConfig = {
     process.env.NEXT_PUBLIC_SITE_URL || 'https://qubixsolution.com',
   email:
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@qubixsolution.com',
-  tagline: 'AI, Web, Mobile & E-commerce Engineering Studio',
+  tagline: 'AI, Web, Backend, Mobile & E-commerce Engineering Studio',
   description:
-    'Qubix Solutions builds production-grade AI agents, LLM apps, chatbots, n8n automations, modern web platforms (React, Angular, Next.js), Flutter mobile apps, Shopify and WordPress e-commerce stores, and end-to-end digital marketing — engineered for growth.',
+    'Qubix Solutions builds production-grade AI agents, LLM apps, chatbots, n8n automations, scalable Python backends (FastAPI, Django, Django REST Framework, admin tooling), modern web platforms (React, Angular, Next.js), Flutter mobile apps, Shopify and WordPress e-commerce stores, and end-to-end digital marketing — engineered for growth.',
   keywords: [
     'AI development company',
     'LLM application development',
     'AI chatbot development',
     'n8n automation services',
     'Node.js development agency',
+    'Python backend development',
+    'FastAPI development agency',
+    'Django development',
+    'Django REST Framework development',
     'React.js development',
     'Angular development',
     'Flutter app development',

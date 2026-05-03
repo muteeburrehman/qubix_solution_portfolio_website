@@ -18,6 +18,16 @@
 .DS_Store
 *.pem
 
+# Python (FastAPI backend — bytecode & venv; never commit)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+**/.venv/
+**/venv/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

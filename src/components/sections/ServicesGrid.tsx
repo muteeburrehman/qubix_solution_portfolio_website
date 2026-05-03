@@ -16,7 +16,7 @@ export function ServicesGrid({ withHeading = true }: { withHeading?: boolean }) 
                 <span className="text-gradient">modern software</span>
               </>
             }
-            description="From AI agents and LLM apps to high-converting e-commerce stores — we cover every layer of your product."
+            description="From AI agents and LLM apps to Python APIs and scalable backends, through high-converting e-commerce — we cover every layer of your product."
           />
         ) : null}
 

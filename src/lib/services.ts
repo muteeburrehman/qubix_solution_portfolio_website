@@ -2,6 +2,7 @@ import {
   Bot,
   Brain,
   Code2,
+  Database,
   Workflow,
   ShoppingBag,
   Smartphone,
@@ -90,6 +91,31 @@ export const services: Service[] = [
     ],
     stack: ['Next.js', 'React', 'Angular', 'TypeScript', 'Tailwind CSS', 'tRPC'],
     gradient: 'from-indigo-500 via-violet-500 to-purple-500',
+  },
+  {
+    slug: 'python-backend-apis',
+    title: 'Python Backends & APIs',
+    short:
+      'Scalable backends with FastAPI, Django & DRF — plus Django Admin and custom admin tooling.',
+    description:
+      'We architect and ship production Python backends tailored to load and complexity — high-throughput async APIs with FastAPI, structured monoliths and content systems with Django, versioned REST with Django REST Framework, and polished operational UX via Django Admin and bespoke admin dashboards. Patterns include PostgreSQL-first data modelling, Celery queues, caching layers and horizontally scalable deployments.',
+    icon: Database,
+    bullets: [
+      'FastAPI & async stacks for latency-sensitive APIs',
+      'Django, DRF & OpenAPI tooling for predictable APIs',
+      'Django Admin, permissions & custom admin panels for teams',
+      'Load-tested, cache-friendly designs that scale with traffic',
+    ],
+    stack: [
+      'Python',
+      'FastAPI',
+      'Django',
+      'Django REST Framework',
+      'PostgreSQL',
+      'Celery',
+      'Redis',
+    ],
+    gradient: 'from-teal-500 via-emerald-500 to-green-600',
   },
   {
     slug: 'mobile-app-development',

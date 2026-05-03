@@ -1,3 +1,5 @@
+# Copy `./backend/.env.example` → `./backend/.env` and add `EMAIL_PASS` (or export it in your shell).
+# The `api` service tolerates a missing `./backend/.env`, but SMTP will fail until credentials exist.
 name: qubix-solutions
 
 services:
@@ -43,6 +45,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Browser posts to `/backend/contact`; nginx proxies to the api service below.
+        NEXT_PUBLIC_CONTACT_API_URL: /backend/contact
     image: qubix-solutions/web:latest
     container_name: qubix-web
     restart: unless-stopped
@@ -64,6 +69,36 @@ services:
       start_period: 20s
 
   # ---------------------------------------------------------------------------
+  # api — FastAPI SMTP contact relay
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: qubix-solutions/api:latest
+    container_name: qubix-api
+    restart: unless-stopped
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      SMTP_HOST: smtp.hostinger.com
+      SMTP_PORT: "587"
+      EMAIL_USER: support@qubixsolution.com
+      # Comma-separated. Override in shell or `./backend/.env` if needed.
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://qubixsolution.com,https://www.qubixsolution.com,http://localhost:3000,http://127.0.0.1:3000}
+    expose:
+      - "8000"
+    networks:
+      - qubix-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
   # nginx — TLS terminator + reverse proxy
   # ---------------------------------------------------------------------------
   nginx:
@@ -77,6 +112,8 @@ services:
     depends_on:
       init-certs:
         condition: service_completed_successfully
+      api:
+        condition: service_healthy
       web:
         condition: service_healthy
     ports:

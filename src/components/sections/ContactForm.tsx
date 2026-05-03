@@ -16,6 +16,7 @@ const services = [
   'AI Chatbots',
   'AI Automation (n8n / Node.js)',
   'Web App (React / Angular / Next.js)',
+  'Backend / API (Python, FastAPI, Django / DRF)',
   'Mobile App (Flutter)',
   'Shopify E-commerce',
   'WordPress / WooCommerce',
@@ -32,6 +33,29 @@ const budgets = [
   '$100k+',
 ];
 
+/** FastAPI exposes friendly `detail`; fall back to nested Pydantic error rows. */
+function extractContactApiError(payload: unknown): string | undefined {
+  if (!payload || typeof payload !== 'object') return undefined;
+  const body = payload as Record<string, unknown>;
+  const detail = body.detail;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail) && detail.length > 0) {
+    const row = detail[0] as Record<string, unknown>;
+    if (typeof row.msg === 'string') return row.msg;
+  }
+  if (typeof body.error === 'string') return body.error;
+  return undefined;
+}
+
+/**
+ * Default matches local FastAPI (`uvicorn main:app --port 8000`).
+ * Docker Compose overrides via build-arg `/backend/contact` proxied through nginx.
+ */
+const CONTACT_ENDPOINT =
+  (typeof process.env.NEXT_PUBLIC_CONTACT_API_URL === 'string'
+    ? process.env.NEXT_PUBLIC_CONTACT_API_URL.trim()
+    : '') || 'http://localhost:8000/contact';
+
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -44,15 +68,21 @@ export function ContactForm() {
     const data = Object.fromEntries(new FormData(e.currentTarget).entries());
 
     try {
-      const res = await fetch('/api/contact', {
+      const res = await fetch(CONTACT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
+      const body = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || 'Something went wrong');
+        const msg =
+          extractContactApiError(body) ||
+          (res.status === 422
+            ? 'Please check required fields — name, email & message.'
+            : 'Something went wrong. Please try again or email us directly.');
+        throw new Error(msg);
       }
 
       setStatus('success');
@@ -70,7 +100,7 @@ export function ContactForm() {
           <CheckCircle2 className="h-7 w-7" />
         </div>
         <h3 className="mt-5 font-display text-2xl font-bold text-fg">
-          Message received
+          Message sent successfully
         </h3>
         <p className="mt-2 text-fg/70">
           Thanks for reaching out — we&apos;ll get back to you shortly.

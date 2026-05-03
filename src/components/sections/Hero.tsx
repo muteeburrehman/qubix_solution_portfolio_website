@@ -46,9 +46,10 @@ export function Hero() {
             className="mt-5 max-w-2xl text-balance text-sm leading-relaxed text-fg/70 sm:mt-6 sm:text-lg"
           >
             Qubix Solutions designs and engineers production-grade software —
-            LLM apps, AI chatbots, n8n automations, React & Angular web apps,
-            Flutter mobile apps, Shopify and WordPress stores — all backed by
-            performance-tuned DevOps and growth marketing.
+            LLM apps, AI chatbots, n8n automations, scalable Python backends with
+            FastAPI & Django, React & Angular web apps, Flutter mobile apps,
+            Shopify and WordPress stores — all backed by performance-tuned DevOps
+            and growth marketing.
           </motion.p>
 
           <motion.div
