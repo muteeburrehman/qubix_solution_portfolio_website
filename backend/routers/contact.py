@@ -23,7 +23,7 @@ async def submit_contact(payload: ContactSubmission) -> dict[str, bool | str]:
     """
 
     # Honeypot: bots should see the same UX as legit users — no SMTP (mirrors legacy Next handler).
-    if payload.website and payload.website.strip():
+    if payload.hp and payload.hp.strip():
         logger.info("[contact] honeypot filled; rejecting silently without email")
         return {"ok": True}
 

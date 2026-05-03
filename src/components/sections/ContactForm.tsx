@@ -124,12 +124,14 @@ export function ContactForm() {
       className="card-glass relative rounded-3xl p-5 sm:p-8"
       noValidate
     >
-      {/* Honeypot */}
+      {/* Honeypot: never name this `website` — browsers/password managers autofill it */}
       <input
         type="text"
-        name="website"
+        name="hp"
         tabIndex={-1}
         autoComplete="off"
+        data-lpignore="true"
+        data-1p-ignore
         className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden opacity-0"
         aria-hidden
       />

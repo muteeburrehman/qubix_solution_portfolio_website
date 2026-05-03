@@ -2,7 +2,7 @@
 Pydantic models for inbound contact payloads (used by POST /contact).
 """
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field
 
 
 class ContactSubmission(BaseModel):
@@ -11,7 +11,8 @@ class ContactSubmission(BaseModel):
 
     ``name``, ``email``, and ``message`` match the advertised API contract.
     Extra fields preserve the richer Next.js form (company, budget, etc.).
-    ``website`` is a honeypot field; when non-empty submissions are silently dropped.
+    ``hp`` is a honeypot (must stay empty). Accepts JSON key ``hp`` (preferred) or
+    legacy ``website`` so outdated bundles still work once browsers stop autofilling.
     """
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="allow")
@@ -24,4 +25,9 @@ class ContactSubmission(BaseModel):
     phone: str | None = Field(default=None, max_length=50)
     service: str | None = Field(default=None, max_length=200)
     budget: str | None = Field(default=None, max_length=100)
-    website: str | None = Field(default=None, max_length=500, repr=False)
+    hp: str | None = Field(
+        default=None,
+        max_length=500,
+        validation_alias=AliasChoices('hp', 'website'),
+        description='Honeypot (JSON key `hp`; `website` accepted for backwards compatibility).',
+    )

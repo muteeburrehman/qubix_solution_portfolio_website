@@ -14,6 +14,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from schemas.contact import ContactSubmission
+from services.contact_email_html import render_contact_notification_html
 
 logger = logging.getLogger(__name__)
 
@@ -66,14 +67,17 @@ def send_contact_notification(data: ContactSubmission) -> None:
     reply_to_addr = str(data.email)
 
     plain = _build_plain_body(data)
-    mime = MIMEMultipart()
-    mime["Subject"] = "New Contact Form Submission"
+    html_body = render_contact_notification_html(data)
+
+    mime = MIMEMultipart("alternative")
+    mime["Subject"] = "New inquiry — Qubix Solutions"
     mime["From"] = email_user
 
     mime["To"] = recipient
 
     mime["Reply-To"] = reply_to_addr
     mime.attach(MIMEText(plain, "plain", "utf-8"))
+    mime.attach(MIMEText(html_body, "html", "utf-8"))
 
     envelope = mime.as_string()
     logger.info("Sending SMTP message from %s subject=%s", email_user, mime["Subject"])
