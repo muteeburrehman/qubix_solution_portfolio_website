@@ -62,10 +62,12 @@ export function ContactForm() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    // React clears `e.currentTarget` after awaits; keep a stable reference for `reset()`.
+    const form = e.currentTarget;
     setStatus('submitting');
     setError(null);
 
-    const data = Object.fromEntries(new FormData(e.currentTarget).entries());
+    const data = Object.fromEntries(new FormData(form).entries());
 
     try {
       const res = await fetch(CONTACT_ENDPOINT, {
@@ -85,8 +87,8 @@ export function ContactForm() {
         throw new Error(msg);
       }
 
+      form.reset();
       setStatus('success');
-      e.currentTarget.reset();
     } catch (err) {
       setStatus('error');
       setError(err instanceof Error ? err.message : 'Something went wrong');
