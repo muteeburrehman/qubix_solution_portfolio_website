@@ -13,6 +13,7 @@ from services.email_service import send_contact_notification
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["contact"])
+logger.info("Contact router loaded (POST /contact → SMTP only; honeypot removed).")
 
 
 @router.post("/contact", summary="Receive contact-form submission and send email.")
@@ -21,11 +22,6 @@ async def submit_contact(payload: ContactSubmission) -> dict[str, bool | str]:
     Send mail in a worker thread so the event loop stays responsive, but only return
     success after SMTP accepts — so the UI is not falsely green when mail fails.
     """
-
-    # Honeypot: bots should see the same UX as legit users — no SMTP (mirrors legacy Next handler).
-    if payload.hp and payload.hp.strip():
-        logger.info("[contact] honeypot filled; rejecting silently without email")
-        return {"ok": True}
 
     try:
         await asyncio.to_thread(send_contact_notification, payload)

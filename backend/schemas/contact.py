@@ -10,9 +10,8 @@ class ContactSubmission(BaseModel):
     Public contact endpoint body.
 
     ``name``, ``email``, and ``message`` match the advertised API contract.
-    Extra fields preserve richer form data and unknown keys (e.g. stale ``website``
-    honeypots from old cached bundles)—those extras are ignored; only ``hp`` is used
-    for spam checks so password managers can't block delivery via a filled ``website``.
+    Extra keys (e.g. legacy ``website`` or ``hp`` fields from old caches) are
+    ignored — spam mitigation relies on nginx rate limits and inbox filters.
     """
 
     model_config = ConfigDict(str_strip_whitespace=True, extra="allow")
@@ -25,8 +24,3 @@ class ContactSubmission(BaseModel):
     phone: str | None = Field(default=None, max_length=50)
     service: str | None = Field(default=None, max_length=200)
     budget: str | None = Field(default=None, max_length=100)
-    hp: str | None = Field(
-        default=None,
-        max_length=500,
-        description='Honeypot (JSON key `hp`); must stay empty for humans.',
-    )

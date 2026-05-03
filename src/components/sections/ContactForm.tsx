@@ -124,18 +124,6 @@ export function ContactForm() {
       className="card-glass relative rounded-3xl p-5 sm:p-8"
       noValidate
     >
-      {/* Honeypot: never name this `website` — browsers/password managers autofill it */}
-      <input
-        type="text"
-        name="hp"
-        tabIndex={-1}
-        autoComplete="off"
-        data-lpignore="true"
-        data-1p-ignore
-        className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden opacity-0"
-        aria-hidden
-      />
-
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Full name" name="name" required placeholder="Jane Doe" />
         <Field
