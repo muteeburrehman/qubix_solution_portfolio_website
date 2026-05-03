@@ -106,6 +106,15 @@ def send_contact_notification(data: ContactSubmission) -> None:
             if refused:
                 raise RuntimeError(f"SMTP recipients refused by server: {refused}")
 
+    except smtplib.SMTPAuthenticationError as exc:
+        logger.error(
+            "SMTP authentication rejected (wrong EMAIL_PASS or mailbox user): %s",
+            getattr(exc, "smtp_error", exc) if hasattr(exc, "smtp_error") else exc,
+        )
+        raise
+    except smtplib.SMTPRecipientsRefused:
+        logger.error("SMTP server refused recipient inbox %s — check EMAIL_USER mailbox exists.", recipient)
+        raise
     except (OSError, smtplib.SMTPException) as exc:
         logger.exception("SMTP send failed: %s", exc)
         raise

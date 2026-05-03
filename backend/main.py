@@ -76,6 +76,14 @@ _origins = [o.strip() for o in _origins_raw.split(",") if o.strip()]
 if not _origins:
     logger.warning("CORS_ORIGINS empty — defaulting to localhost origins only.")
 
+for _o in _origins:
+    if any(c in _o for c in "<>|\\"):
+        logger.warning(
+            "CORS origin %r looks invalid (often a stray `>` from copy-paste/shell). "
+            "Use full URLs like https://qubixsolution.com — malformed origins break browser preflight.",
+            _o,
+        )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_origins or ["http://localhost:3000"],
