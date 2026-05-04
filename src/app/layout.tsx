@@ -69,12 +69,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-    ],
-    apple: '/apple-touch-icon.png',
-  },
   manifest: '/site.webmanifest',
   formatDetection: {
     email: false,
