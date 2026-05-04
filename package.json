@@ -2,7 +2,7 @@
   "name": "qubix-solutions-portfolio",
   "version": "1.0.0",
   "private": true,
-  "description": "Qubix Solutions - AI, Web, Mobile & E-commerce Development Portfolio",
+  "description": "Qubix Solutions — custom software, web, mobile, commerce and marketing.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -5,9 +5,9 @@ import { Reveal } from '@/components/ui/Reveal';
 import { Target, Heart, Lightbulb, ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'About — A senior team building AI-first software',
+  title: 'About — Qubix Solutions engineering studio',
   description:
-    'Qubix Solutions is a small, senior engineering studio that builds AI products, web platforms, mobile apps and e-commerce stores for ambitious teams.',
+    'Qubix Solutions is a focused engineering and product studio — custom software, web, mobile and e-commerce engagements for teams that value clarity and craftsmanship.',
   alternates: { canonical: '/about' },
 };
 
@@ -26,9 +26,9 @@ const values = [
   },
   {
     icon: Lightbulb,
-    title: 'Pragmatic AI',
+    title: 'Pragmatic technology',
     description:
-      'We use AI where it adds real value, not for the demo reel. Boring infrastructure beats hype.',
+      'We adopt new tools when they remove friction — preferring maintainable foundations over trend-chasing demos.',
   },
   {
     icon: ShieldCheck,
@@ -48,7 +48,7 @@ export default function AboutPage() {
             title={
               <>
                 A senior studio for{' '}
-                <span className="text-gradient">AI-first software</span>
+                <span className="text-gradient">serious product work</span>
               </>
             }
             description="We are a focused team of engineers, designers and growth specialists. Small on purpose — so every client works directly with the people building their product."
@@ -89,11 +89,11 @@ export default function AboutPage() {
               without the bloat, slowness or six-figure retainers.
             </p>
             <p className="mt-4 text-base leading-relaxed text-fg/75 sm:text-lg">
-              Whether it&apos;s an AI agent that resolves customer support
-              tickets, a Shopify store that converts at 3x the industry
-              average, a Flutter app that feels native on every device, or an
-              n8n automation that saves your team 30 hours a week — we treat
-              every project like it&apos;s our own product.
+              Whether it&apos;s a membership site that earns reader trust, an
+              integration that untangles finance and inventory, a mobile app your
+              coaches can rely on, or a workflow that finally removes the Friday
+              scramble — we treat every engagement like reputation is on the line
+              (because it is).
             </p>
           </div>
         </div>

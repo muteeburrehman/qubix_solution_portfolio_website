@@ -1,52 +1,59 @@
 'use client';
 
-const techs = [
+import { MotionConfig, motion } from 'framer-motion';
+
+const TECH = [
+  'Django',
+  'FastAPI',
+  'Express',
   'Next.js',
+  'TypeScript',
   'React',
   'Angular',
-  'TypeScript',
-  'Node.js',
   'Flutter',
-  'OpenAI',
-  'Anthropic',
-  'LangChain',
-  'Pinecone',
-  'n8n',
   'Shopify',
-  'Hydrogen',
-  'WordPress',
   'WooCommerce',
-  'Tailwind CSS',
   'PostgreSQL',
-  'Redis',
+  'RDS',
   'Docker',
-  'Nginx',
-  'Hetzner',
   'AWS',
-  'Cloudflare',
-  'Stripe',
+  'Azure',
+  'Tailwind CSS',
   'Firebase',
-  'Supabase',
 ];
 
 export function TechMarquee() {
-  const list = [...techs, ...techs];
+  const repeated = [...TECH, ...TECH];
+
   return (
-    <div className="relative border-y border-fg/[0.06] bg-surface/40 py-10 backdrop-blur">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent" />
-      <div className="overflow-hidden">
-        <div className="flex w-max animate-marquee gap-10 whitespace-nowrap">
-          {list.map((t, i) => (
+    <MotionConfig reducedMotion="user">
+      <div className="relative overflow-hidden border-y border-fg/[0.06] bg-surface/[0.5] py-10">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-32 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-32 bg-gradient-to-l from-background to-transparent" />
+
+        <motion.div
+          className="flex w-max gap-10 whitespace-nowrap px-10"
+          animate={{ x: '-50%' }}
+          transition={{
+            duration: 40,
+            ease: 'linear',
+            repeat: Infinity,
+          }}
+        >
+          {repeated.map((name, idx) => (
             <span
-              key={`${t}-${i}`}
-              className="text-base font-medium text-fg/40 transition-colors hover:text-fg"
+              key={`${name}-${idx}`}
+              className="text-xl font-semibold text-fg/25 transition-colors hover:text-accent-600 sm:text-2xl md:text-3xl"
+              style={{ transitionDuration: `${200 + idx * 5}ms` }}
             >
-              {t}
+              {name.trim()}
+              <span aria-hidden className="mx-4 text-accent-500 opacity-75">
+                ·
+              </span>
             </span>
           ))}
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </MotionConfig>
   );
 }

@@ -84,7 +84,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#05060f',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f9f7f4' },
+    { media: '(prefers-color-scheme: dark)', color: '#0c1222' },
+  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -95,7 +98,7 @@ const organizationJsonLd = {
   '@type': 'Organization',
   name: siteConfig.name,
   url: siteConfig.url,
-  logo: `${siteConfig.url}/favicon.svg`,
+  logo: `${siteConfig.url}/brand/logo.png`,
   email: siteConfig.email,
   description: siteConfig.description,
   sameAs: [
@@ -131,6 +134,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${spaceGrotesk.variable}`}
       suppressHydrationWarning
     >

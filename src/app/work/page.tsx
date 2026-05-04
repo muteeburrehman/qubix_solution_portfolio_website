@@ -7,7 +7,7 @@ import { Reveal } from '@/components/ui/Reveal';
 export const metadata: Metadata = {
   title: 'Our Work — Case Studies & Projects',
   description:
-    'A selection of AI, web, mobile and e-commerce projects we have built — case studies with real metrics and outcomes.',
+    'A selection of web, mobile, e-commerce and custom software projects — case studies grounded in metrics you can discuss with your leadership team.',
   alternates: { canonical: '/work' },
 };
 
@@ -24,7 +24,7 @@ export default function WorkPage() {
                 <span className="text-gradient">real outcomes</span>
               </>
             }
-            description="A snapshot of recent engagements across AI, web, mobile and e-commerce. Names withheld under NDA — happy to share details on a call."
+            description="Recent engagements spanning custom tooling, storefronts and flagship apps — names withheld under NDA while metrics stay candid."
           />
         </div>
       </Section>

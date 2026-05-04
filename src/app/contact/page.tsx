@@ -5,9 +5,9 @@ import { ContactForm } from '@/components/sections/ContactForm';
 import { siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Contact — Start a project with Qubix Solutions',
+  title: 'Contact — Qubix Solutions',
   description:
-    'Get in touch with Qubix Solutions for AI, web, mobile, e-commerce or marketing projects.',
+    'Get in touch about custom software, web, mobile, e-commerce storefronts or marketing — we will reply with a clear next step.',
   alternates: { canonical: '/contact' },
 };
 

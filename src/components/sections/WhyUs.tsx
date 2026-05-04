@@ -12,9 +12,9 @@ import {
 const reasons = [
   {
     icon: Sparkles,
-    title: 'AI-native by default',
+    title: 'Partnership mindset',
     description:
-      'Every project gets the option to integrate AI — search, automation, agents — without bolting it on later.',
+      'We align on outcomes, timelines and trade-offs upfront — then keep priorities clear as the roadmap evolves.',
   },
   {
     icon: Gauge,
@@ -38,7 +38,7 @@ const reasons = [
     icon: Layers,
     title: 'Full-stack ownership',
     description:
-      'Design, frontend, backend, AI, mobile, e-commerce and DevOps — all from one accountable team.',
+      'Strategy, UX, engineering, storefronts and mobile — one accountable team, with tidy handovers when you want to operate in-house.',
   },
   {
     icon: Clock,

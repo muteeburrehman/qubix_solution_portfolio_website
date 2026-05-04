@@ -12,12 +12,9 @@ import {
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
 const services = [
-  'AI / LLM Development',
-  'AI Chatbots',
-  'AI Automation (n8n / Node.js)',
-  'Web App (React / Angular / Next.js)',
-  'Backend / API (Python, FastAPI, Django / DRF)',
-  'Mobile App (Flutter)',
+  'Custom Software',
+  'Web Development',
+  'Mobile App Development',
   'Shopify E-commerce',
   'WordPress / WooCommerce',
   'Digital Marketing & SEO',
@@ -47,14 +44,8 @@ function extractContactApiError(payload: unknown): string | undefined {
   return undefined;
 }
 
-/**
- * Default matches local FastAPI (`uvicorn main:app --port 8000`).
- * Docker Compose overrides via build-arg `/backend/contact` proxied through nginx.
- */
-const CONTACT_ENDPOINT =
-  (typeof process.env.NEXT_PUBLIC_CONTACT_API_URL === 'string'
-    ? process.env.NEXT_PUBLIC_CONTACT_API_URL.trim()
-    : '') || 'http://localhost:8000/contact';
+/** Same-origin — Next proxies to FastAPI (`CONTACT_BACKEND_URL` on the server). */
+const CONTACT_ENDPOINT = '/api/contact';
 
 export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
@@ -91,7 +82,14 @@ export function ContactForm() {
       setStatus('success');
     } catch (err) {
       setStatus('error');
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      const raw = err instanceof Error ? err.message : '';
+      setError(
+        raw === 'Failed to fetch'
+          ? 'Could not reach the server. If you are hosting this site yourself, ensure the contact API is running and CONTACT_BACKEND_URL is set correctly.'
+          : err instanceof Error
+            ? err.message
+            : 'Something went wrong',
+      );
     }
   }
 

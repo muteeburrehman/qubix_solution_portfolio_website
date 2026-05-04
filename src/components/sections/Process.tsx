@@ -25,7 +25,7 @@ const steps = [
     icon: Rocket,
     title: 'Launch & scale',
     description:
-      'We deploy to your cloud (Hetzner, AWS, GCP), monitor everything and iterate based on real user data.',
+      'We deploy to your cloud (AWS, Azure, GCP), monitor uptime and iterate from real usage — not assumptions.',
   },
 ];
 

@@ -15,6 +15,7 @@ from email.mime.text import MIMEText
 
 from schemas.contact import ContactSubmission
 from services.contact_email_html import render_contact_notification_html
+from services.contact_urls import public_contact_form_url
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ def _build_plain_body(data: ContactSubmission) -> str:
     if data.budget:
         lines.append(f"Budget: {data.budget}")
     lines.extend(["", "Message:", data.message])
+    lines.extend(["", f"Submission channel: website contact form ({public_contact_form_url()})"])
     return "\n".join(lines)
 
 

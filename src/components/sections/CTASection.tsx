@@ -31,7 +31,7 @@ export function CTASection() {
 
               <div className="flex flex-col gap-3">
                 <Link href="/contact" className="btn-primary justify-center">
-                  Start a project
+                  Contact us
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a

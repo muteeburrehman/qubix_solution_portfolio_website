@@ -72,7 +72,7 @@ export function Header() {
             href="/contact"
             className="btn-primary text-sm"
           >
-            Start a project
+            Contact us
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -125,7 +125,7 @@ export function Header() {
             href="/contact"
             className="btn-primary mt-2 w-full"
           >
-            Start a project
+            Contact us
             <ArrowRight className="h-4 w-4" />
           </Link>
         </nav>

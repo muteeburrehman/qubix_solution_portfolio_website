@@ -3,6 +3,9 @@ Branded multipart/alternative HTML for contact notifications.
 
 Uses table layout + inline CSS for Outlook/Gmail compatibility. Escapes user input.
 Light inner card renders well where clients strip dark ``body`` backgrounds.
+
+The ``PUBLIC_SITE_URL`` env (see ``contact_urls``) controls which /contact URL is
+shown — it documents *your* canonical form endpoint for ops, not the visitor's site.
 """
 
 from __future__ import annotations
@@ -10,10 +13,10 @@ from __future__ import annotations
 import html
 
 from schemas.contact import ContactSubmission
+from services.contact_urls import public_contact_form_url
 
-_PURPLE = "#7c3aed"
-_PURPLE_DARK = "#5b21b6"
-_CYAN = "#06b6d4"
+_BRAND_NAVY = "#1e40af"
+_BRAND_CYAN = "#06b6d4"
 _OUTER_BG = "#f1f5f9"
 _CARD = "#ffffff"
 _SLATE_HEAD = "#0f172a"
@@ -33,17 +36,18 @@ def render_contact_notification_html(data: ContactSubmission) -> str:
         if not value or not str(value).strip():
             return ""
         return (
-            '<tr>'
-            f'<td style="padding:10px 0;border-bottom:1px solid {_BORDER};vertical-align:top;">'
-            f'<p style="margin:0;color:{_SLATE_MUTED};font-size:12px;text-transform:uppercase;'
-            'letter-spacing:0.08em;font-weight:600;">'
-            f'{esc(label)}</p>'
-            f'</td>'
-            f'<td style="padding:10px 0 10px 16px;border-bottom:1px solid {_BORDER};vertical-align:top;">'
-            f'<p style="margin:0;color:{_SLATE_HEAD};font-size:15px;line-height:1.55;font-weight:500;">'
-            f'{esc(value)}</p>'
-            '</td>'
-            '</tr>'
+            "<tr>"
+            f'<td width="132" valign="top" '
+            f'style="width:132px;max-width:132px;padding:9px 10px 9px 0;'
+            f"border-bottom:1px solid {_BORDER};vertical-align:top;\">"
+            f'<p style="margin:0;color:{_SLATE_HEAD};font-size:13px;font-weight:600;line-height:1.4;">'
+            f"{esc(label)}</p>"
+            "</td>"
+            f'<td valign="top" style="padding:9px 0;border-bottom:1px solid {_BORDER};vertical-align:top;">'
+            f'<p style="margin:0;color:{_SLATE_BODY};font-size:15px;line-height:1.55;font-weight:500;">'
+            f"{esc(value)}</p>"
+            "</td>"
+            "</tr>"
         )
 
     rows = "".join(
@@ -59,7 +63,14 @@ def render_contact_notification_html(data: ContactSubmission) -> str:
 
     message_block = esc(data.message).replace("\r\n", "\n").replace("\n", "<br />\n")
     raw_snippet = data.message.replace("\r\n", " ").replace("\n", " ").strip()
-    snippet = html.escape(raw_snippet[:140] + ("…" if len(raw_snippet) > 140 else ""), quote=False)
+    snippet = html.escape(
+        raw_snippet[:140] + ("…" if len(raw_snippet) > 140 else ""),
+        quote=False,
+    )
+
+    form_url = public_contact_form_url()
+    form_href = html.escape(form_url, quote=True)
+    form_link_label = html.escape(form_url)
 
     return f"""<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -84,8 +95,8 @@ def render_contact_notification_html(data: ContactSubmission) -> str:
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;">
 
           <tr>
-            <td style="padding:0;border-radius:14px 14px 0 0;background:{_PURPLE};">
-              <div style="background:linear-gradient(125deg,{_PURPLE} 0%,{_CYAN} 98%);padding:26px 28px 28px;">
+            <td style="padding:0;border-radius:14px 14px 0 0;background:{_BRAND_NAVY};">
+              <div style="background:linear-gradient(125deg,{_BRAND_CYAN} 0%,{_BRAND_NAVY} 98%);padding:26px 28px 28px;">
                 <p style="margin:0 0 4px;color:rgba(255,255,255,0.9);font-size:11px;font-weight:700;
                   letter-spacing:0.26em;text-transform:uppercase;">QUBIX SOLUTIONS</p>
                 <p style="margin:0;color:#ffffff;font-size:23px;font-weight:700;line-height:1.2;
@@ -97,34 +108,52 @@ def render_contact_notification_html(data: ContactSubmission) -> str:
           </tr>
 
           <tr>
-            <td style="background:{_CARD};padding:0 28px 32px;border:1px solid {_BORDER};
+            <td style="background:{_CARD};padding:0 26px 30px;border:1px solid {_BORDER};
               border-top:none;border-radius:0 0 14px 14px;box-shadow:0 14px 40px rgba(15,23,42,0.07);">
 
-              <p style="margin:0;padding:24px 0 6px;color:{_SLATE_BODY};font-size:15px;line-height:1.65;">
-                Here&apos;s everything they submitted. Lead source: your portfolio contact flow.
+              <p style="margin:0;padding:22px 0 14px;color:{_SLATE_BODY};font-size:15px;line-height:1.6;">
+                Summary of their submission is below.&nbsp;<strong style="color:{_SLATE_HEAD};">Reply</strong> in your mail app to respond directly to them.
               </p>
-              <p style="margin:0;padding:0 0 22px;color:{_SLATE_MUTED};font-size:13px;line-height:1.55;">
-                <span style="font-family:ui-monospace,Consolas,'Liberation Mono',monospace;font-size:12px;color:{_PURPLE};">
-                  https://qubixsolution.com/contact</span>
-              </p>
+
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 18px 0;">
+                <tr>
+                  <td style="padding:12px 16px;background:{_MESSAGING_BG};border:1px solid {_BORDER};border-radius:10px;">
+                    <p style="margin:0 0 8px;color:{_SLATE_MUTED};font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+                      Where this came from</p>
+                    <p style="margin:0 0 10px;color:{_SLATE_BODY};font-size:14px;line-height:1.55;">
+                      Captured through your published <strong style="color:{_SLATE_HEAD};font-weight:600;">contact page</strong>.
+                      Any link below points at <em>your</em> domain (FYI / QA) — not the visitor&apos;s company site.</p>
+                    <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0;">
+                      <tr>
+                        <td style="border-radius:8px;background:{_CARD};border:1px solid {_BORDER};">
+                          <a href="{form_href}" target="_blank" rel="noopener noreferrer"
+                            style="display:inline-block;padding:10px 16px;font-size:13px;font-weight:600;color:{_BRAND_NAVY};text-decoration:none;">
+                            Open your contact page</a>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="margin:10px 0 0;color:{_SLATE_MUTED};font-size:12px;line-height:1.45;word-break:break-all;">{form_link_label}</p>
+                  </td>
+                </tr>
+              </table>
 
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="height:3px;line-height:3px;background:linear-gradient(90deg,{_PURPLE},{_CYAN});
+                  <td style="height:3px;line-height:3px;background:linear-gradient(90deg,{_BRAND_NAVY},{_BRAND_CYAN});
                     border-radius:2px;font-size:0;">&#8203;</td>
                 </tr>
-                <tr><td style="height:18px;font-size:0;line-height:0;">&#8203;</td></tr>
+                <tr><td style="height:16px;font-size:0;line-height:0;">&#8203;</td></tr>
               </table>
 
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">{rows}</table>
 
-              <p style="margin:24px 0 10px;color:{_SLATE_MUTED};font-size:11px;font-weight:700;
-                letter-spacing:0.14em;text-transform:uppercase;">Project details</p>
+              <p style="margin:22px 0 8px;color:{_SLATE_MUTED};font-size:11px;font-weight:700;
+                letter-spacing:0.12em;text-transform:uppercase;">Project details</p>
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td style="padding:18px 20px;background:{_MESSAGING_BG};border:1px solid {_BORDER};
-                    border-left:4px solid {_CYAN};border-radius:0 10px 10px 0;">
-                    <div style="margin:0;color:{_SLATE_HEAD};font-size:15px;line-height:1.65;">{message_block}</div>
+                  <td style="padding:12px 16px;background:{_MESSAGING_BG};border:1px solid {_BORDER};
+                    border-left:4px solid {_BRAND_CYAN};border-radius:0 10px 10px 0;">
+                    <div style="margin:0;color:{_SLATE_HEAD};font-size:15px;line-height:1.58;">{message_block}</div>
                   </td>
                 </tr>
               </table>
@@ -147,3 +176,4 @@ def render_contact_notification_html(data: ContactSubmission) -> str:
 </body>
 </html>
 """
+

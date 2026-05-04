@@ -1,9 +1,6 @@
 import {
-  Bot,
-  Brain,
   Code2,
-  Database,
-  Workflow,
+  Layers,
   ShoppingBag,
   Smartphone,
   Megaphone,
@@ -23,164 +20,116 @@ export type Service = {
   gradient: string;
 };
 
+/**
+ * Client-facing wording: what you get — not jargon-first.
+ */
 export const services: Service[] = [
   {
-    slug: 'ai-llm-development',
-    title: 'AI & LLM Development',
+    slug: 'custom-software',
+    title: 'Custom Software',
     short:
-      'Custom GPT, Claude & open-source LLM apps engineered for your domain.',
+      'Tailored desktop, enterprise and internal tools aligned with how your team works.',
     description:
-      'We design and ship production-grade LLM applications — RAG systems, AI agents, fine-tuned models and document intelligence pipelines — using OpenAI, Anthropic, Llama, Mistral and vector databases such as Pinecone, Weaviate and pgvector.',
-    icon: Brain,
+      'When off-the-shelf products do not fit, we plan and ship software shaped around your processes — from dashboards and integrations to lasting line-of-business systems you can evolve with confidence.',
+    icon: Layers,
     bullets: [
-      'Retrieval-Augmented Generation (RAG) on your private data',
-      'Multi-agent systems with LangChain, LangGraph & CrewAI',
-      'Fine-tuning and evaluation pipelines',
-      'Voice & multimodal AI experiences',
+      'Requirements that match real workflows — not buzzwords.',
+      'Iterative delivery so you see value early.',
+      'Handover docs and clarity so your team stays in control.',
     ],
-    stack: ['OpenAI', 'Anthropic', 'LangChain', 'Pinecone', 'pgvector', 'Hugging Face'],
-    gradient: 'from-violet-500 via-fuchsia-500 to-cyan-400',
-  },
-  {
-    slug: 'ai-chatbots',
-    title: 'AI Chatbots & Assistants',
-    short:
-      'Conversational AI for support, sales & internal knowledge — 24/7.',
-    description:
-      'Deploy intelligent chatbots and voice assistants on your website, WhatsApp, Slack or Messenger. Trained on your knowledge base, integrated with your CRM and capable of taking real actions through tool-calling.',
-    icon: Bot,
-    bullets: [
-      'Website, WhatsApp, Telegram & Slack chatbots',
-      'CRM, calendar & ticketing integrations',
-      'Human-handover and analytics dashboards',
-      'Multilingual support out of the box',
+    stack: [
+      'Django',
+      'FastAPI',
+      'Express',
+      'PostgreSQL',
+      'RDS',
+      'REST APIs',
     ],
-    stack: ['GPT-4o', 'Claude 3.5', 'Twilio', 'Voiceflow', 'Botpress'],
-    gradient: 'from-cyan-400 via-sky-500 to-indigo-500',
-  },
-  {
-    slug: 'ai-automation-n8n',
-    title: 'AI Automation with n8n & Node.js',
-    short:
-      'Workflow automation that connects every tool in your business.',
-    description:
-      'We build robust automations using n8n, Make, Zapier and custom Node.js services — eliminating repetitive work across sales, marketing, finance and operations. Every workflow is observable, retry-safe and version-controlled.',
-    icon: Workflow,
-    bullets: [
-      'Self-hosted n8n setups on your infrastructure',
-      'Custom nodes & webhooks in Node.js / TypeScript',
-      'AI-powered triggers, classifiers & enrichment',
-      'CI/CD, monitoring and alerting included',
-    ],
-    stack: ['n8n', 'Node.js', 'TypeScript', 'PostgreSQL', 'Redis', 'Docker'],
-    gradient: 'from-fuchsia-500 via-pink-500 to-rose-500',
+    gradient: 'from-cyan-500 via-teal-500 to-blue-700',
   },
   {
     slug: 'web-development',
-    title: 'Web Development (React & Angular)',
+    title: 'Web Development',
     short:
-      'Blazing-fast, SEO-friendly web apps with React, Next.js & Angular.',
+      'Fast, findable websites and web apps — from landing pages to business platforms.',
     description:
-      'From landing pages to complex SaaS dashboards — we craft pixel-perfect, accessible and lightning-fast web applications with modern stacks, type safety and best-in-class developer experience.',
+      'We help brands show up sharply online — customer-facing sites, dashboards and storefronts backed by layouts that adapt to phones and desktops, tuned so search engines understand what you offer.',
     icon: Code2,
     bullets: [
-      'Next.js & React 19 SSR/SSG applications',
-      'Angular enterprise dashboards & PWAs',
-      'Design systems with Tailwind & Storybook',
-      'Core Web Vitals tuned for SEO',
-    ],
-    stack: ['Next.js', 'React', 'Angular', 'TypeScript', 'Tailwind CSS', 'tRPC'],
-    gradient: 'from-indigo-500 via-violet-500 to-purple-500',
-  },
-  {
-    slug: 'python-backend-apis',
-    title: 'Python Backends & APIs',
-    short:
-      'Scalable backends with FastAPI, Django & DRF — plus Django Admin and custom admin tooling.',
-    description:
-      'We architect and ship production Python backends tailored to load and complexity — high-throughput async APIs with FastAPI, structured monoliths and content systems with Django, versioned REST with Django REST Framework, and polished operational UX via Django Admin and bespoke admin dashboards. Patterns include PostgreSQL-first data modelling, Celery queues, caching layers and horizontally scalable deployments.',
-    icon: Database,
-    bullets: [
-      'FastAPI & async stacks for latency-sensitive APIs',
-      'Django, DRF & OpenAPI tooling for predictable APIs',
-      'Django Admin, permissions & custom admin panels for teams',
-      'Load-tested, cache-friendly designs that scale with traffic',
+      'Clear structure and UX so visitors know what to do next.',
+      'Performance so pages feel snappy.',
+      'Ongoing refinement as your business grows.',
     ],
     stack: [
-      'Python',
-      'FastAPI',
-      'Django',
-      'Django REST Framework',
-      'PostgreSQL',
-      'Celery',
-      'Redis',
+      'Next.js',
+      'TypeScript',
+      'React',
+      'Angular',
+      'Express',
+      'Tailwind CSS',
     ],
-    gradient: 'from-teal-500 via-emerald-500 to-green-600',
+    gradient: 'from-blue-600 via-indigo-500 to-cyan-500',
   },
   {
     slug: 'mobile-app-development',
-    title: 'Mobile App Development (Flutter)',
+    title: 'Mobile App Development',
     short:
-      'Cross-platform iOS & Android apps from a single Flutter codebase.',
+      'iOS & Android apps with one focused codebase — from idea through store launch.',
     description:
-      'Beautiful, native-quality mobile experiences built with Flutter and Dart — from MVP to App Store launch. We handle architecture, state management, offline support, push notifications and store submissions.',
+      'Reach customers in their pockets with an app that matches your brand. We steer concept, UX, integrations and launches so submission and updates feel manageable — not chaotic.',
     icon: Smartphone,
     bullets: [
-      'Flutter for iOS, Android, Web & Desktop',
-      'Firebase, Supabase & custom REST/GraphQL backends',
-      'In-app purchases, push & analytics',
-      'Play Store and App Store submission',
+      'Roadmap from MVP to scale.',
+      'Push, payments and integrations where you need them.',
+      'Hands-on guidance for App Store and Play Store listings.',
     ],
-    stack: ['Flutter', 'Dart', 'Firebase', 'Supabase', 'Riverpod', 'Bloc'],
-    gradient: 'from-sky-400 via-cyan-400 to-teal-400',
+    stack: ['Flutter', 'Dart', 'Firebase', 'Kotlin', 'Swift', 'Riverpod'],
+    gradient: 'from-sky-500 via-cyan-500 to-teal-600',
   },
   {
     slug: 'shopify-ecommerce',
     title: 'Shopify E-commerce',
     short:
-      'High-converting Shopify stores, themes & headless storefronts.',
+      'Beautiful stores that guide shoppers from browse to checkout with confidence.',
     description:
-      'Custom Shopify themes, Liquid development, Shopify Hydrogen headless storefronts and conversion-rate optimization. We turn your store into a revenue engine.',
+      'We design and evolve Shopify storefronts focused on conversions — clearer navigation, persuasive product detail, streamlined checkout flows and integrations with your fulfilment stack.',
     icon: ShoppingBag,
     bullets: [
-      'Custom Shopify themes & Liquid development',
-      'Headless Shopify Hydrogen storefronts',
-      'Checkout extensions & private apps',
-      'CRO, analytics and Klaviyo email flows',
+      'Theme and layout tuned for sales — not fluff.',
+      'Apps and integrations that behave predictably.',
+      'Email journeys and promotions that reinforce repeat buyers.',
     ],
-    stack: ['Shopify', 'Liquid', 'Hydrogen', 'Remix', 'Klaviyo'],
-    gradient: 'from-emerald-400 via-teal-400 to-cyan-400',
+    stack: ['Shopify', 'Liquid', 'Remix', 'Klaviyo', 'Stripe', 'SEO'],
+    gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
   },
   {
     slug: 'wordpress-ecommerce',
     title: 'WordPress & WooCommerce',
     short:
-      'Custom WordPress themes, plugins and WooCommerce stores.',
+      'Editor-friendly websites and WooCommerce shops you can operate day to day.',
     description:
-      'From content-heavy marketing sites to full-featured WooCommerce stores. We build secure, fast and easy-to-maintain WordPress experiences with custom themes, ACF blocks and plugin development.',
+      'WordPress excels when marketers need agility. We build themes and stores that editing teams can honestly maintain — clean structure, security awareness and ecommerce flows that shoppers trust.',
     icon: Globe,
     bullets: [
-      'Custom WordPress themes & Gutenberg blocks',
-      'WooCommerce stores with custom checkout',
-      'Performance, security and SEO hardening',
-      'Headless WordPress with Next.js',
+      'Editor experience your team actually uses.',
+      'WooCommerce experiences that feel storefront-grade.',
+      'Care for speed, backups and upkeep.',
     ],
-    stack: ['WordPress', 'WooCommerce', 'PHP', 'ACF', 'Elementor'],
-    gradient: 'from-amber-400 via-orange-500 to-rose-500',
+    stack: ['WordPress', 'WooCommerce', 'PHP', 'ACF', 'Elementor', 'MySQL'],
+    gradient: 'from-amber-500 via-orange-500 to-rose-500',
   },
   {
     slug: 'digital-marketing',
     title: 'Digital Marketing & SEO',
     short:
-      'Performance marketing, SEO and content that compounds.',
+      'Visibility and qualified traffic — measurable, not mystical.',
     description:
-      'Full-funnel digital marketing — technical SEO, paid ads, social, email and analytics. We don\'t just drive traffic, we drive qualified leads and measurable revenue.',
+      'We pair technical SEO fundamentals with pragmatic paid and content plans so you attract people who resemble your buyers — tracked in analytics you can read, not jargon buried in spreadsheets.',
     icon: Megaphone,
     bullets: [
-      'Technical & on-page SEO audits',
-      'Google, Meta & LinkedIn Ads management',
-      'Email & marketing automation',
-      'GA4, GTM and conversion tracking',
+      'Audits grounded in crawl data and searcher intent.',
+      'Campaigns anchored to funnel stages you care about.',
+      'Reporting you can reuse with leadership.',
     ],
     stack: ['GA4', 'GTM', 'Meta Ads', 'Google Ads', 'Klaviyo', 'Ahrefs'],
     gradient: 'from-rose-500 via-pink-500 to-fuchsia-500',
@@ -189,18 +138,24 @@ export const services: Service[] = [
     slug: 'devops-deployment',
     title: 'DevOps & Cloud Deployment',
     short:
-      'Docker, CI/CD and cloud infrastructure done right.',
+      'Reliable hosting, deployments and safeguards so releases feel boring — in the best way.',
     description:
-      'We deploy and maintain applications on Hetzner, AWS, GCP and DigitalOcean — with Docker, Nginx, GitHub Actions and full observability. Reliable infrastructure that scales with you.',
+      'Infrastructure should fade into the background. We help you settle on repeatable deploys, monitoring you notice when it matters and cloud posture that survives traffic spikes.',
     icon: Server,
     bullets: [
-      'Hetzner, AWS, GCP & DigitalOcean setups',
-      'Docker, Docker Compose & Kubernetes',
-      'Nginx, SSL, CDN & monitoring',
-      'CI/CD pipelines with GitHub Actions',
+      'CI/CD pipelines your team trusts.',
+      'SSL, CDN and observability stitched together sensibly.',
+      'Cloud footprints on AWS and Azure tuned to workload.',
     ],
-    stack: ['Docker', 'Nginx', 'GitHub Actions', 'Hetzner', 'AWS', 'Cloudflare'],
-    gradient: 'from-slate-400 via-zinc-400 to-violet-400',
+    stack: [
+      'Docker',
+      'GitHub Actions',
+      'AWS',
+      'Azure',
+      'Cloudflare',
+      'Kubernetes',
+    ],
+    gradient: 'from-slate-500 via-blue-700 to-indigo-600',
   },
 ];
 

@@ -5,21 +5,21 @@ import { Quote } from 'lucide-react';
 const testimonials = [
   {
     quote:
-      'Qubix delivered our AI support agent in 6 weeks. It now handles 78% of tickets autonomously and our customers love it.',
-    name: 'Head of Customer Experience',
-    company: 'B2B SaaS company',
-  },
-  {
-    quote:
-      'They re-platformed our 12k-SKU Shopify store onto Hydrogen. Conversion up 34%, mobile LCP under 1.2s. The team is sharp, fast and easy to work with.',
+      'Qubix tightened our Shopify experience and the buying path finally matches how our customers actually shop. Conversion followed without a painful replatform.',
     name: 'CMO',
     company: 'Fashion DTC brand',
   },
   {
     quote:
-      'Our n8n automations save 30+ hours a week. What used to be six manual workflows is now one observable, retry-safe pipeline.',
+      'They spoke in roadmaps and milestones we could take to the board — not jargon. Our internal tools finally match how the team really works.',
     name: 'Director of Operations',
-    company: 'Mid-market e-commerce',
+    company: 'Regional distributor',
+  },
+  {
+    quote:
+      'Shipping our mobile app felt collaborative, not chaotic. Store reviews, analytics and handover notes were all there on day one.',
+    name: 'Founder',
+    company: 'Fitness & coaching startup',
   },
 ];
 
@@ -41,7 +41,7 @@ export function Testimonials() {
           {testimonials.map((t, i) => (
             <Reveal key={i} delay={i * 0.06}>
               <div className="card-glass relative h-full rounded-2xl p-7">
-                <Quote className="h-7 w-7 text-primary-400" />
+                <Quote className="h-7 w-7 text-primary-500" />
                 <p className="mt-4 text-base leading-relaxed text-fg/85">
                   &ldquo;{t.quote}&rdquo;
                 </p>

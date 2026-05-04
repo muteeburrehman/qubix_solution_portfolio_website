@@ -12,11 +12,11 @@ export function ServicesGrid({ withHeading = true }: { withHeading?: boolean }) 
             eyebrow="What we build"
             title={
               <>
-                A full-stack studio for{' '}
-                <span className="text-gradient">modern software</span>
+                Partners for{' '}
+                <span className="text-gradient">growth-minded teams</span>
               </>
             }
-            description="From AI agents and LLM apps to Python APIs and scalable backends, through high-converting e-commerce — we cover every layer of your product."
+            description="Whether you need a flagship site, bespoke software behind the scenes or a shop that converts — we focus on clarity, timelines you can trust and outcomes your stakeholders recognise."
           />
         ) : null}
 

@@ -86,7 +86,7 @@ export function Footer() {
                 href="/contact"
                 className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-fg transition-colors hover:text-accent-400"
               >
-                Start a project
+                Contact us
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
 
@@ -112,16 +112,9 @@ export function Footer() {
         </div>
       </div>
 
-      {/* ---------- Bottom bar ---------- */}
       <div className="border-t border-fg/[0.06]">
-        <div className="container-page flex flex-col items-start justify-between gap-2 py-5 text-xs text-fg/50 sm:flex-row sm:items-center sm:gap-3 sm:py-6">
-          <p>
-            © {year} {siteConfig.name}. All rights reserved.
-          </p>
-          <p className="text-balance">
-            Built with Next.js, Tailwind CSS &amp; Framer Motion. Engineered for
-            performance &amp; SEO.
-          </p>
+        <div className="container-page py-5 text-center text-xs text-fg/50 sm:py-6">
+          © {year} {siteConfig.name}. All rights reserved.
         </div>
       </div>
     </footer>

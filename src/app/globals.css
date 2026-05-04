@@ -15,37 +15,37 @@
   :root {
     color-scheme: light;
 
-    --color-bg:        248 250 252;   /* slate-50 */
-    --color-surface:   255 255 255;
-    --color-surface-2: 241 245 249;   /* slate-100 */
-    --color-fg:         15  23  42;   /* slate-900 */
-    --color-fg-soft:    15  23  42;
-    --color-on-brand:  255 255 255;
+    --color-bg:        253 251 246;   /* warm cream */
+    --color-surface:   255 254 251;
+    --color-surface-2: 244 241 232;
+    --color-fg:         15   39   68; /* deep navy slate */
+    --color-fg-soft:    30   52   78;
+    --color-on-brand: 255 255 255;
 
-    --glow-primary: 124  58 237 / 0.10;
-    --glow-accent:   34 211 238 / 0.10;
-    --glow-magenta: 236  72 153 / 0.10;
+    --glow-primary:   14 165 233 / 0.10; /* sky */
+    --glow-accent:     6 182 212 / 0.10; /* cyan */
+    --glow-magenta:   37 99 235 / 0.08;  /* subtle bluewash (historical token name) */
 
-    --grid-line:    15 23 42 / 0.06;
-    --scrollbar-track: 241 245 249;
+    --grid-line:    15 39 68 / 0.06;
+    --scrollbar-track: 244 241 232;
   }
 
   :root.dark {
     color-scheme: dark;
 
-    --color-bg:          5   6  15;
-    --color-surface:    11  13  31;
-    --color-surface-2:  17  20  43;
-    --color-fg:        255 255 255;
-    --color-fg-soft:   228 228 231;
-    --color-on-brand:  255 255 255;
+    --color-bg:          12  18   34;
+    --color-surface:    17  24   43;
+    --color-surface-2:  24  33   58;
+    --color-fg:        246 246 247;
+    --color-fg-soft:   228 231 239;
+    --color-on-brand: 255 255 255;
 
-    --glow-primary: 124  58 237 / 0.30;
-    --glow-accent:   34 211 238 / 0.18;
-    --glow-magenta: 236  72 153 / 0.18;
+    --glow-primary:   56 189 248 / 0.18;
+    --glow-accent:    34 211 238 / 0.16;
+    --glow-magenta:   129 140 248 / 0.12;
 
-    --grid-line:    255 255 255 / 0.04;
-    --scrollbar-track: 11 13 31;
+    --grid-line:    255 255 255 / 0.06;
+    --scrollbar-track: 17 24 43;
   }
 
   * {
@@ -71,19 +71,19 @@
       radial-gradient(
         ellipse 60% 40% at 100% 100%,
         rgb(var(--glow-accent)),
-        transparent 60%
+        transparent 58%
       ),
       radial-gradient(
         ellipse 60% 40% at 0% 100%,
         rgb(var(--glow-magenta)),
-        transparent 60%
+        transparent 58%
       );
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   ::selection {
-    background-color: rgba(124, 58, 237, 0.45);
-    color: #ffffff;
+    background-color: rgba(6, 182, 212, 0.28);
+    color: rgb(var(--color-fg));
   }
 
   ::-webkit-scrollbar {
@@ -94,11 +94,11 @@
     background: rgb(var(--scrollbar-track));
   }
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #7c3aed, #22d3ee);
+    background: linear-gradient(180deg, #06b6d4, #1e3a8a);
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #8b5cf6, #67e8f9);
+    background: linear-gradient(180deg, #22d3ee, #2563eb);
   }
 
   h1,
@@ -137,7 +137,7 @@
   }
 
   :root:not(.dark) .card-glass {
-    background-color: rgb(var(--color-surface) / 0.7);
+    background-color: rgb(var(--color-surface) / 0.78);
     border-color: rgb(var(--color-fg) / 0.08);
     box-shadow:
       0 1px 0 0 rgb(var(--color-fg) / 0.02) inset,
@@ -147,13 +147,13 @@
   .glow-ring {
     box-shadow:
       0 0 0 1px rgb(var(--color-fg) / 0.06),
-      0 10px 60px -15px rgba(124, 58, 237, 0.5);
+      0 10px 60px -15px rgba(6, 182, 212, 0.45);
   }
 
   .btn-primary {
     @apply relative inline-flex min-h-11 items-center justify-center gap-2 overflow-hidden rounded-full
       bg-gradient-brand px-6 py-3 text-sm font-semibold text-white
-      shadow-glow transition-all duration-300 hover:shadow-[0_0_60px_-10px_rgba(124,58,237,0.8)]
+      shadow-glow transition-all duration-300 hover:shadow-[0_0_60px_-10px_rgba(6,182,212,0.55)]
       hover:scale-[1.02] active:scale-[0.99];
   }
 

@@ -66,17 +66,26 @@ framework**:
 
 ### Run the dev server
 
+The contact form posts to **`/api/contact`** (same origin). The Next.js server proxies to FastAPI via **`CONTACT_BACKEND_URL`** (defaults to `http://127.0.0.1:8000/contact`).
+
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Copy env file (optional — defaults are baked in)
+# 2. Copy env file (optional — defaults match local FastAPI on port 8000)
 cp .env.example .env.local
 
-# 3. Start dev server
+# 3. SMTP + CORS — copy backend env and add EMAIL_PASS before testing email send
+cp backend/.env.example backend/.env
+
+# 4a. Terminal A — FastAPI (from repo root or backend/)
+cd backend && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+
+# 4b. Terminal B — Next.js
 npm run dev
 
-# Open http://localhost:3000
+# Open http://localhost:3000 — /contact submits via /api/contact → FastAPI /contact.
 ```
 
 ### Production build (locally)

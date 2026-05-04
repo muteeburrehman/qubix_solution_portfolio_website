@@ -45,9 +45,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        # Browser posts to `/backend/contact`; nginx proxies to the api service below.
-        NEXT_PUBLIC_CONTACT_API_URL: /backend/contact
     image: qubix-solutions/web:latest
     container_name: qubix-web
     restart: unless-stopped
@@ -55,6 +52,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
+      CONTACT_BACKEND_URL: http://api:8000/contact
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://qubixsolution.com}
       NEXT_PUBLIC_SUPPORT_EMAIL: ${NEXT_PUBLIC_SUPPORT_EMAIL:-support@qubixsolution.com}
     expose:
@@ -87,6 +85,8 @@ services:
       EMAIL_USER: support@qubixsolution.com
       # Comma-separated. Override in shell or `./backend/.env` if needed.
       CORS_ORIGINS: ${CORS_ORIGINS:-https://qubixsolution.com,https://www.qubixsolution.com,http://localhost:3000,http://127.0.0.1:3000}
+      # Used in outbound lead emails (“open your contact page” link — no trailing slash).
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://qubixsolution.com}
     expose:
       - "8000"
     networks:

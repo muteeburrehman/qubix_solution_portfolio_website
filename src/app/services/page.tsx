@@ -7,9 +7,9 @@ import { CTASection } from '@/components/sections/CTASection';
 import { Reveal } from '@/components/ui/Reveal';
 
 export const metadata: Metadata = {
-  title: 'Services — AI, Web, Mobile & E-commerce',
+  title: 'Services — Custom Software, Web, Mobile & E-commerce',
   description:
-    'Explore our services: AI & LLM development, chatbots, n8n automation, Python backends with FastAPI and Django REST Framework, React.js, Angular, Flutter mobile apps, Shopify, WordPress e-commerce and digital marketing.',
+    'Explore how Qubix helps with custom software, web platforms, mobile apps, Shopify and WooCommerce storefronts, digital marketing & SEO, plus reliable cloud deployments.',
   alternates: { canonical: '/services' },
 };
 
@@ -22,11 +22,11 @@ export default function ServicesPage() {
             eyebrow="Services"
             title={
               <>
-                Engineering & growth services for{' '}
-                <span className="text-gradient">ambitious teams</span>
+                Engineering & consulting for{' '}
+                <span className="text-gradient">teams scaling up</span>
               </>
             }
-            description="Pick a service to learn how we deliver — or combine them into a full product engagement."
+            description="Thoughtful engagements — bespoke software through e-commerce launches — articulated in plain language so your stakeholders know what ships when."
           />
         </div>
       </Section>
@@ -45,7 +45,7 @@ export default function ServicesPage() {
                     className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-30 blur-3xl"
                     style={{
                       background:
-                        'conic-gradient(from 90deg, #7c3aed, #22d3ee, #ec4899, #7c3aed)',
+                        'conic-gradient(from 90deg, #06b6d4, #0ea5e9, #1e40af, #06b6d4)',
                     }}
                   />
 
