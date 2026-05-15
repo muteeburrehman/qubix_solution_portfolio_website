@@ -6,6 +6,8 @@ export const siteConfig = {
     process.env.NEXT_PUBLIC_SITE_URL || 'https://qubixsolution.com',
   email:
     process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'support@qubixsolution.com',
+  whatsapp:
+    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '+923164720321',
   tagline:
     'Solutions for web, mobile, commerce & custom software.',
   description:
@@ -40,3 +42,8 @@ export const siteConfig = {
 } as const;
 
 export type NavItem = (typeof siteConfig.nav)[number];
+
+/** Opens WhatsApp chat for the configured number (wa.me link). */
+export function whatsappHref(number: string = siteConfig.whatsapp): string {
+  return `https://wa.me/${number.replace(/\D/g, '')}`;
+}

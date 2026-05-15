@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { Mail, Globe, MessageSquare } from 'lucide-react';
+import { Mail, Globe, MessageCircle } from 'lucide-react';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { ContactForm } from '@/components/sections/ContactForm';
-import { siteConfig } from '@/lib/site';
+import { siteConfig, whatsappHref } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Contact — Qubix Solutions',
@@ -41,10 +41,10 @@ export default function ContactPage() {
               href={siteConfig.url}
             />
             <InfoCard
-              icon={MessageSquare}
-              title="Prefer email?"
-              text={`Drop us a note at ${siteConfig.email}`}
-              href={`mailto:${siteConfig.email}`}
+              icon={MessageCircle}
+              title="WhatsApp"
+              text={siteConfig.whatsapp}
+              href={whatsappHref()}
             />
 
             <div className="card-glass rounded-2xl p-6">

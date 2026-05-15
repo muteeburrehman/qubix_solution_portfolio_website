@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { Mail, Linkedin, Twitter, Github, ArrowUpRight } from 'lucide-react';
-import { siteConfig } from '@/lib/site';
+import { Mail, MessageCircle, Linkedin, Twitter, Github, ArrowUpRight } from 'lucide-react';
+import { siteConfig, whatsappHref } from '@/lib/site';
 import { services } from '@/lib/services';
 import { Logo } from './Logo';
 
@@ -27,13 +27,24 @@ export function Footer() {
             <p className="mt-5 max-w-md text-sm leading-relaxed text-fg/70">
               {siteConfig.description}
             </p>
-            <a
-              href={`mailto:${siteConfig.email}`}
-              className="mt-5 inline-flex max-w-full items-center gap-2 rounded-full border border-fg/10 bg-fg/[0.03] px-4 py-2 text-xs text-fg/90 transition-colors hover:bg-fg/[0.06] sm:text-sm"
-            >
-              <Mail className="h-4 w-4 flex-none text-accent-400" />
-              <span className="truncate">{siteConfig.email}</span>
-            </a>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <a
+                href={`mailto:${siteConfig.email}`}
+                className="inline-flex max-w-full items-center gap-2 rounded-full border border-fg/10 bg-fg/[0.03] px-4 py-2 text-xs text-fg/90 transition-colors hover:bg-fg/[0.06] sm:text-sm"
+              >
+                <Mail className="h-4 w-4 flex-none text-accent-400" />
+                <span className="truncate">{siteConfig.email}</span>
+              </a>
+              <a
+                href={whatsappHref()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex max-w-full items-center gap-2 rounded-full border border-fg/10 bg-fg/[0.03] px-4 py-2 text-xs text-fg/90 transition-colors hover:bg-fg/[0.06] sm:text-sm"
+              >
+                <MessageCircle className="h-4 w-4 flex-none text-accent-400" />
+                <span className="truncate">{siteConfig.whatsapp}</span>
+              </a>
+            </div>
           </div>
 
           {/* ---------- Link columns ---------- */}

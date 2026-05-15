@@ -107,6 +107,12 @@ const organizationJsonLd = {
       contactType: 'customer support',
       availableLanguage: ['English'],
     },
+    {
+      '@type': 'ContactPoint',
+      telephone: siteConfig.whatsapp,
+      contactType: 'customer support',
+      availableLanguage: ['English'],
+    },
   ],
 };
 
